@@ -21,4 +21,6 @@ from app.views import *
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', ReactView.as_view(), name="anything"),
+    path('search/', ReactView.as_view(), name='search'),
+    # path('', BrigadeView.as_view(), name="anything"),
 ]
