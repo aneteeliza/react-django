@@ -125,3 +125,8 @@
   margin: 0 auto; /* Center the container */
   padding: 20px;  /* Add padding to the container */
 }
+
+.contact-info {
+  text-align: left;
+  padding: 20px;
+}

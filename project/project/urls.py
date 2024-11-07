@@ -23,4 +23,8 @@ urlpatterns = [
     path('', ReactView.as_view(), name="anything"),
     path('search/', ReactView.as_view(), name='search'),
     # path('', BrigadeView.as_view(), name="anything"),
+    path('register', UserRegister.as_view(), name='register'),
+	path('login', UserLogin.as_view(), name='login'),
+	path('logout', UserLogout.as_view(), name='logout'),
+	path('user', UserView.as_view(), name='user'),
 ]
