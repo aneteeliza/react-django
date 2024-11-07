@@ -2,7 +2,7 @@ import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import { Container, Navbar, Button, Form, Card } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Route, Routes, Link, Navigate } from 'react-router-dom'; // Import routing components
+import { Route, Routes, Link, Navigate, useNavigate } from 'react-router-dom'; // Import routing components
 import Home from './pages/Home'; // Import Home page
 
 axios.defaults.xsrfCookieName = 'csrftoken';
@@ -14,11 +14,12 @@ const client = axios.create({
 });
 
 function App() {
-  const [currentUser, setCurrentUser] = useState();
+  const [currentUser, setCurrentUser] = useState(false);
   const [registrationToggle, setRegistrationToggle] = useState(false);
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate(); // Hook to programmatically navigate
 
   useEffect(() => {
     const user = localStorage.getItem('currentUser');
@@ -30,13 +31,7 @@ function App() {
   }, []);
 
   function update_form_btn() {
-    if (registrationToggle) {
-      document.getElementById("form_btn").innerHTML = "Register";
-      setRegistrationToggle(false);
-    } else {
-      document.getElementById("form_btn").innerHTML = "Log in";
-      setRegistrationToggle(true);
-    }
+    setRegistrationToggle(!registrationToggle); // Toggle registration state
   }
 
   function submitLogin(e) {
@@ -66,8 +61,12 @@ function App() {
       .then(function(res) {
         localStorage.removeItem('currentUser');
         setCurrentUser(false);
+        setEmail('');  // Clear the email field
+        setPassword('');  // Clear the password field
+        navigate('/');  // Navigate to the login page after logout
       });
   }
+  
 
   return (
     <div className="bg-light min-vh-100 d-flex flex-column">
@@ -76,21 +75,21 @@ function App() {
           <Navbar.Brand>Latvijas Kara muzejs</Navbar.Brand>
           <Navbar.Toggle />
           <Navbar.Collapse className="justify-content-end">
-          <Navbar.Text className="d-flex">
-                {currentUser ? (
-                  <form onSubmit={e => submitLogout(e)} className="d-inline">
-                    <Button variant="outline-light" type="submit">Log out</Button>
-                  </form>
-                ) : (
-                  <Button id="form_btn" onClick={update_form_btn} variant="outline-light" className="d-inline">Register</Button>
-                )}
-                
-                {currentUser && (
-                  <Button variant="outline-light" className="ms-2 d-inline">
-                    <Link to="/home" className="text-decoration-none text-light">Home</Link>
-                  </Button>
-                )}
-              </Navbar.Text>
+            <Navbar.Text className="d-flex">
+              {currentUser ? (
+                <form onSubmit={submitLogout} className="d-inline">
+                  <Button variant="outline-light" type="submit">Log out</Button>
+                </form>
+              ) : (
+                <Button id="form_btn" onClick={update_form_btn} variant="outline-light" className="d-inline">Register</Button>
+              )}
+
+              {currentUser && (
+                <Button variant="outline-light" className="ms-2 d-inline">
+                  <Link to="/home" className="text-decoration-none text-light">Home</Link>
+                </Button>
+              )}
+            </Navbar.Text>
           </Navbar.Collapse>
         </Container>
       </Navbar>
@@ -156,7 +155,7 @@ function App() {
           } />
           
           <Route path="/home" element={<Home />} />
-          
+
           {/* Redirect to Home if user is not logged in */}
           <Route path="*" element={<Navigate to={currentUser ? "/home" : "/"} />} />
         </Routes>
@@ -170,6 +169,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
