@@ -36,3 +36,13 @@
     transform: rotate(360deg);
   }
 }
+
+.NavText {
+  text-decoration: none;  /* Removes underline */
+  color: inherit;         /* Inherits the text color from its parent */
+}
+
+.muzejs {
+  text-decoration: none;
+  color: #333;
+}

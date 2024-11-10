@@ -4,6 +4,7 @@ import { Container, Navbar, Button, Form, Card } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Route, Routes, Link, Navigate, useNavigate } from 'react-router-dom'; // Import routing components
 import Home from './pages/Home'; // Import Home page
+import './App.css';
 
 axios.defaults.xsrfCookieName = 'csrftoken';
 axios.defaults.xsrfHeaderName = 'X-CSRFToken';
@@ -72,7 +73,7 @@ function App() {
     <div className="bg-light min-vh-100 d-flex flex-column">
       <Navbar bg="dark" variant="dark">
         <Container>
-          <Navbar.Brand>Latvijas Kara muzejs</Navbar.Brand>
+          <Navbar.Brand><a href="https://www.karamuzejs.lv/" className='NavText'>Latvijas Kara muzejs</a></Navbar.Brand>
           <Navbar.Toggle />
           <Navbar.Collapse className="justify-content-end">
           <Navbar.Text className="d-flex">
@@ -91,7 +92,7 @@ function App() {
 
 {currentUser ? (
     <form onSubmit={submitLogout} className="ms-2 d-inline">
-      <Button variant="outline-light" type="submit">Log out</Button>
+      <Button variant="outline-light" type="submit">Atteikties</Button>
     </form>
   ) : (
     <Button
@@ -100,7 +101,7 @@ function App() {
       variant="outline-light"
       className="d-inline"
     >
-      {registrationToggle ? 'Log in' : "Register"}
+      {registrationToggle ? 'Pieteikties' : "Reģistrēties"}
     </Button>
   )}
 </Navbar.Text>
@@ -114,18 +115,18 @@ function App() {
           <Route path="/" element={
             currentUser ? (
               <Card className="w-50 text-center p-4 shadow-lg rounded">
-                <h3>You're logged in!</h3>
-                <p className="text-muted">Welcome back to the app.</p>
+                <h3>Publiskā datubāze "Latviešu karavīri"</h3>
+                <p className="text-muted"><a href="https://www.karamuzejs.lv/" className='muzejs'>Latvijas Kara muzejs</a></p>
               </Card>
             ) : (
               <Card className="w-50 p-4 shadow-lg rounded">
-                <h4 className="text-center mb-4">{registrationToggle ? 'Register' : 'Log in'}</h4>
+                <h4 className="text-center mb-4">{registrationToggle ? 'Reģistrēties' : 'Pieteikties'}</h4>
                 <Form onSubmit={registrationToggle ? submitRegistration : submitLogin}>
                   <Form.Group className="mb-3">
-                    <Form.Label>Email address</Form.Label>
+                    <Form.Label>E-pasta adrese</Form.Label>
                     <Form.Control
                       type="email"
-                      placeholder="Enter email"
+                      placeholder="Ievadiet e-pasta adresi"
                       value={email}
                       onChange={e => setEmail(e.target.value)}
                       className="rounded-pill"
@@ -134,10 +135,10 @@ function App() {
 
                   {registrationToggle && (
                     <Form.Group className="mb-3">
-                      <Form.Label>Username</Form.Label>
+                      <Form.Label>Lietotājvārds</Form.Label>
                       <Form.Control
                         type="text"
-                        placeholder="Enter username"
+                        placeholder="Ievadiet lietotājvārdu"
                         value={username}
                         onChange={e => setUsername(e.target.value)}
                         className="rounded-pill"
@@ -146,23 +147,23 @@ function App() {
                   )}
 
                   <Form.Group className="mb-3">
-                    <Form.Label>Password</Form.Label>
+                    <Form.Label>Parole</Form.Label>
                     <Form.Control
                       type="password"
-                      placeholder="Enter password"
+                      placeholder="Ievadiet paroli"
                       value={password}
                       onChange={e => setPassword(e.target.value)}
                       className="rounded-pill"
                     />
                   </Form.Group>
 
-                  <Button variant="primary" type="submit" className="w-100 rounded-pill">
-                    Submit
+                  <Button variant="success" type="submit" className="w-100 rounded-pill">
+                    Pieteikties
                   </Button>
                 </Form>
                 <div className="mt-3 text-center">
-                  <Button variant="link" onClick={update_form_btn} className="text-primary">
-                    {registrationToggle ? 'Already have an account? Log in' : "Don't have an account? Register"}
+                  <Button variant="link" onClick={update_form_btn} className="text-success">
+                    {registrationToggle ? 'Jau ir lietotāja konts? Pieteikties' : "Nav lietotāja konts? Reģistrēties"}
                   </Button>
                 </div>
               </Card>
@@ -177,7 +178,7 @@ function App() {
       </Container>
 
       <footer className="footer">
-        <p>&copy; 2024 Larvijas Kara muzejs. All rights reserved.</p>
+        <p>&copy; 2024 Larvijas Kara muzejs. Visas tiesības aizsargātas.</p>
       </footer>
     </div>
   );
