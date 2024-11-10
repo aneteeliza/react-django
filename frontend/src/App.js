@@ -33,7 +33,7 @@ function App() {
   function update_form_btn() {
     setRegistrationToggle(!registrationToggle); // Toggle registration state
   }
-
+  
   function submitLogin(e) {
     e.preventDefault();
     client.post("/login", { email, password })
@@ -75,21 +75,36 @@ function App() {
           <Navbar.Brand>Latvijas Kara muzejs</Navbar.Brand>
           <Navbar.Toggle />
           <Navbar.Collapse className="justify-content-end">
-            <Navbar.Text className="d-flex">
-              {currentUser ? (
-                <form onSubmit={submitLogout} className="d-inline">
-                  <Button variant="outline-light" type="submit">Log out</Button>
-                </form>
-              ) : (
-                <Button id="form_btn" onClick={update_form_btn} variant="outline-light" className="d-inline">Register</Button>
-              )}
+          <Navbar.Text className="d-flex">
 
-              {currentUser && (
-                <Button variant="outline-light" className="ms-2 d-inline">
-                  <Link to="/home" className="text-decoration-none text-light">Home</Link>
-                </Button>
-              )}
-            </Navbar.Text>
+  {currentUser && (
+    <Button variant="outline-light" className="ms-2 d-inline">
+      <Link to="/home" className="text-decoration-none text-light">Meklēšana</Link>
+    </Button>
+  )}
+
+{currentUser && (
+    <Button variant="outline-light" className="ms-2 d-inline">
+      <Link to="/about" className="text-decoration-none text-light">Profils</Link>
+    </Button>
+  )}
+
+{currentUser ? (
+    <form onSubmit={submitLogout} className="ms-2 d-inline">
+      <Button variant="outline-light" type="submit">Log out</Button>
+    </form>
+  ) : (
+    <Button
+      id="form_btn"
+      onClick={update_form_btn}
+      variant="outline-light"
+      className="d-inline"
+    >
+      {registrationToggle ? 'Log in' : "Register"}
+    </Button>
+  )}
+</Navbar.Text>
+
           </Navbar.Collapse>
         </Container>
       </Navbar>

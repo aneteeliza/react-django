@@ -1,0 +1,19 @@
+/* Set the width of the dropdown button */
+#dropdown-basic {
+    width: 500px; /* Adjust the width as desired */
+    margin: 0 auto;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 15px;
+    border-color: #333;
+    background-color: #333;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Ensure dropdown menu spans full width of the button */
+  #dropdown-basic-menu {
+    width: 500px; /* Ensure dropdown menu matches button width */
+    border-radius: 15px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+  }
+  

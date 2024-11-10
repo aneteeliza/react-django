@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import Dropdown from 'react-bootstrap/Dropdown';
+import DropdownButton from 'react-bootstrap/DropdownButton';
+import './styles.css';
 
 export default function Home() {
   const [nameSearch, setNameSearch] = useState('');
@@ -46,6 +49,21 @@ export default function Home() {
   return (
     <div className="search">
       <h2>Meklēšana</h2>
+
+      <Dropdown>
+      <Dropdown.Toggle id="dropdown-basic">
+        Izvēlies datu bāzi, kurā meklēt
+      </Dropdown.Toggle>
+
+      <Dropdown.Menu id="dropdown-basic-menu">
+        <Dropdown.Item href="#/action-1">VISĀS</Dropdown.Item>
+        <Dropdown.Item href="#/action-1">Latviešu leģionā mobilizētie</Dropdown.Item>
+        <Dropdown.Item href="#/action-2">Zedelgemas karagūstekņu nometnē ieslodzītie</Dropdown.Item>
+        <Dropdown.Item href="#/action-3">Kritušo un bez vēsts pazudušo leģionāri</Dropdown.Item>
+        <Dropdown.Item href="#/action-3">2.brigādes apbalvotie</Dropdown.Item>
+      </Dropdown.Menu>
+    </Dropdown>
+
 
       {/* Search for Name and Surname (Combined) */}
       <input
