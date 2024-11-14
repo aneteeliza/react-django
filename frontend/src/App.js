@@ -5,6 +5,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { Route, Routes, Link, Navigate, useNavigate } from 'react-router-dom'; // Import routing components
 import Home from './pages/Home'; // Import Home page
 import './App.css';
+import Profils from './pages/Profile';
 
 axios.defaults.xsrfCookieName = 'csrftoken';
 axios.defaults.xsrfHeaderName = 'X-CSRFToken';
@@ -38,7 +39,7 @@ function App() {
   function submitLogin(e) {
     e.preventDefault();
     client.post("/login", { email, password })
-      .then(function(res) {
+      .then(function() {
         localStorage.setItem('currentUser', 'true');
         setCurrentUser(true);
       });
@@ -47,9 +48,9 @@ function App() {
   function submitRegistration(e) {
     e.preventDefault();
     client.post("/register", { email, username, password })
-      .then(function(res) {
+      .then(function() {
         client.post("/login", { email, password })
-          .then(function(res) {
+          .then(function() {
             localStorage.setItem('currentUser', 'true');
             setCurrentUser(true);
           });
@@ -59,7 +60,7 @@ function App() {
   function submitLogout(e) {
     e.preventDefault();
     client.post("/logout", { withCredentials: true })
-      .then(function(res) {
+      .then(function() {
         localStorage.removeItem('currentUser');
         setCurrentUser(false);
         setEmail('');  // Clear the email field
@@ -86,9 +87,15 @@ function App() {
 
 {currentUser && (
     <Button variant="outline-light" className="ms-2 d-inline">
-      <Link to="/about" className="text-decoration-none text-light">Profils</Link>
+      <Link to="/" className="text-decoration-none text-light">Home</Link>
     </Button>
   )}
+
+{currentUser && (
+  <Button variant="outline-light" className="ms-2 d-inline">
+    <Link to="/profils" className="text-decoration-none text-light">Profils</Link>
+  </Button>
+)}
 
 {currentUser ? (
     <form onSubmit={submitLogout} className="ms-2 d-inline">
@@ -174,6 +181,7 @@ function App() {
 
           {/* Redirect to Home if user is not logged in */}
           <Route path="*" element={<Navigate to={currentUser ? "/home" : "/"} />} />
+          <Route path="/profils" element={currentUser ? <Profils /> : <Navigate to="/" />} />
         </Routes>
       </Container>
 

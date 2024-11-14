@@ -17,3 +17,8 @@
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
   }
   
+  .mb-3 {
+    width: 500px; /* Adjust the width as desired */
+    margin: 0 auto;
+    padding: 10px;
+  }

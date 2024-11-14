@@ -20,11 +20,15 @@ from app.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', ReactView.as_view(), name="anything"),
-    path('search/', ReactView.as_view(), name='search'),
+    path('', BrigadeView.as_view(), name="anything"),
+    path('brigade/', BrigadeView.as_view(), name='brigade'),
+    path('mobilizetie/', MobilizetieView.as_view(), name='mobilizetie'),
+    path('zedelgema/', ZedelgemaView.as_view(), name='zedelgema'),
+    path('kritusie/', KritusieView.as_view(), name='kritusie'),
     # path('', BrigadeView.as_view(), name="anything"),
     path('register', UserRegister.as_view(), name='register'),
-	path('login', UserLogin.as_view(), name='login'),
-	path('logout', UserLogout.as_view(), name='logout'),
-	path('user', UserView.as_view(), name='user'),
+    path('login', UserLogin.as_view(), name='login'),
+    path('logout', UserLogout.as_view(), name='logout'),
+    path('user', UserView.as_view(), name='user'),
+    path('user/', UserProfileView.as_view(), name='user-profile'),
 ]

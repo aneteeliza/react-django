@@ -1,3 +1,4 @@
+from .models import AppUser
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from . models import *
@@ -38,7 +39,29 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('email', 'username')
 
 
-class ReactSerializer(serializers.ModelSerializer):
+class BrigadeSerializer(serializers.ModelSerializer):
     class Meta:
-        model = React
-        fields = ['uzvards_un_vards', 'pakape']
+        model = Brigade
+        fields = ['uzvards_un_vards', 'pakape',
+                  'dienesta_vieniba', 'ordenis', 'ordeņa_pakape', 'piezimes', 'arhīva_lieta']
+
+
+class MobilizetieSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Mobilizetie
+        fields = ['uzvards', 'vards', 'dzimsanas_datums']
+
+
+class ZedelgemaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Zedelgema
+        fields = ['uzvards', 'vards', 'dzimsanas_datums',
+                  'dienesta_pakape', 'dienesta_vieniba', 'nometnes_nodalijums',
+                  'aizbraucis_uz_psrs', 'miris', 'piezimes']
+
+
+class KritusieSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Kritusie
+        fields = ['vards_uzvards', 'dienesta_pakape',
+                  'vieniba', 'kritis_un_miris_no_ievainojuma_un_kad', 'apbedisanas_vieta', 'piezimes']
