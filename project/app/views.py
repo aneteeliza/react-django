@@ -1,3 +1,8 @@
+# Make sure you have a serializer for user
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth.models import User
+from rest_framework import status
 import requests
 from .utils import (
     map_kritusie_data,
@@ -25,6 +30,9 @@ from rest_framework import permissions, status
 from . validations import custom_validation, validate_email, validate_password
 # Create your views here.
 from rest_framework.permissions import AllowAny
+
+from django.views.decorators.csrf import csrf_exempt
+from django.middleware.csrf import get_token
 
 
 class BrigadeView(APIView):
@@ -168,23 +176,73 @@ class UserLogout(APIView):
 
 
 class UserView(APIView):
-    permission_classes = (permissions.IsAuthenticated,)
-    authentication_classes = (SessionAuthentication,)
-    ##
-
-    def get(self, request):
-        serializer = UserSerializer(request.user)
-        return Response({'user': serializer.data}, status=status.HTTP_200_OK)
-
-
-class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]
-    authentication_classes = [SessionAuthentication]
 
     def get(self, request):
         user = request.user
         serializer = UserSerializer(user)
         return Response({"user": serializer.data})
+
+    def put(self, request):
+        user = request.user
+        # If the request body contains new values for fields, we update the user
+        user.email = request.data.get("email", user.email)
+        user.username = request.data.get("username", user.username)
+        user.save()
+
+        # Returning success response
+        return Response({"message": "Profile updated successfully"}, status=status.HTTP_200_OK)
+    # permission_classes = (permissions.IsAuthenticated,)
+    # authentication_classes = (SessionAuthentication,)
+    # ##
+
+    # def get(self, request):
+    #     serializer = UserSerializer(request.user)
+    #     return Response({'user': serializer.data}, status=status.HTTP_200_OK)
+
+
+# class UserProfileView(APIView):
+#     permission_classes = [IsAuthenticated]
+#     authentication_classes = [SessionAuthentication]
+
+#     def get(self, request):
+#         user = request.user
+#         serializer = UserSerializer(user)
+#         return Response({"user": serializer.data})
+
+
+class UserProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        serializer = UserSerializer(user)
+        return Response({"user": serializer.data})
+
+    def put(self, request):
+        user = request.user
+        # If the request body contains new values for fields, we update the user
+        user.email = request.data.get("email", user.email)
+        user.username = request.data.get("username", user.username)
+        user.save()
+
+        # Returning success response
+        return Response({"message": "Profile updated successfully"}, status=status.HTTP_200_OK)
+
+
+# class UserProfileView(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def get(self, request):
+#         user = request.user
+#         return Response({"user": {"email": user.email, "username": user.username}})
+
+#     def put(self, request):
+#         user = request.user
+#         user.email = request.data.get("email", user.email)
+#         user.username = request.data.get("username", user.username)
+#         user.save()
+#         return Response({"message": "Profile updated successfully"})
 
 
 def profile_view(request):
@@ -216,3 +274,22 @@ def unified_search_view(request):
 
     # Return unified JSON response
     return JsonResponse(all_data, safe=False)
+
+
+# @login_required
+# def change_password(request):
+#     if request.method == 'POST':
+#         # Initialize the PasswordChangeForm with the current user and request data
+#         form = PasswordChangeForm(user=request.user, data=request.POST)
+
+#         if form.is_valid():
+#             # Save the new password
+#             form.save()
+#             # Keep the user logged in after password change
+#             update_session_auth_hash(request, form.user)
+#             return JsonResponse({'message': 'Password changed successfully!'}, status=200)
+
+#         # If the form is not valid, return error messages
+#         return JsonResponse({'error': form.errors}, status=400)
+
+#     return JsonResponse({'error': 'Invalid method'}, status=405)

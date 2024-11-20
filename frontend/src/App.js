@@ -7,6 +7,7 @@ import Home from './pages/Home'; // Import Home page
 import './App.css';
 import Profils from './pages/Profile';
 
+axios.defaults.baseURL = 'http://127.0.0.1:8000';
 axios.defaults.xsrfCookieName = 'csrftoken';
 axios.defaults.xsrfHeaderName = 'X-CSRFToken';
 axios.defaults.withCredentials = true;
@@ -23,27 +24,47 @@ function App() {
   const [password, setPassword] = useState('');
   const navigate = useNavigate(); // Hook to programmatically navigate
 
+  // useEffect(() => {
+  //   const user = localStorage.getItem('currentUser');
+  //   if (user) {
+  //     setCurrentUser(true);
+  //   } else {
+  //     setCurrentUser(false);
+  //   }
+  // }, []);
+
   useEffect(() => {
     const user = localStorage.getItem('currentUser');
-    if (user) {
-      setCurrentUser(true);
-    } else {
-      setCurrentUser(false);
-    }
+    setCurrentUser(user === 'true');
   }, []);
+  
 
   function update_form_btn() {
     setRegistrationToggle(!registrationToggle); // Toggle registration state
   }
   
+  // function submitLogin(e) {
+  //   e.preventDefault();
+  //   client.post("/login", { email, password })
+  //     .then(function() {
+  //       localStorage.setItem('currentUser', 'true');
+  //       setCurrentUser(true);
+  //     });
+  // }
+
   function submitLogin(e) {
     e.preventDefault();
     client.post("/login", { email, password })
       .then(function() {
         localStorage.setItem('currentUser', 'true');
         setCurrentUser(true);
+        navigate('/home'); // Navigate to Home after login
+      })
+      .catch(error => {
+        console.error('Login error:', error);
       });
   }
+  
   
   function submitRegistration(e) {
     e.preventDefault();
@@ -182,6 +203,7 @@ function App() {
           {/* Redirect to Home if user is not logged in */}
           <Route path="*" element={<Navigate to={currentUser ? "/home" : "/"} />} />
           <Route path="/profils" element={currentUser ? <Profils /> : <Navigate to="/" />} />
+          
         </Routes>
       </Container>
 

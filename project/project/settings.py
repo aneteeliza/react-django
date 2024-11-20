@@ -27,7 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
@@ -37,20 +37,31 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    'http://localhost:3000',
     'http://127.0.0.1:3000',
+    'http://localhost:3000',
+    'http://127.0.0.1:3000'
 ]
 
 CORS_ORIGIN_WHITELIST = [
     'http://localhost:3000',  # The port where your React app is running
 ]
 
-CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000']
+# CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000']
 
 CORS_ALLOW_HEADERS = [
+    'authorization',
     'content-type',
     'X-CSRFToken',
     # Other headers as needed
+]
+
+# Allow preflight requests
+CORS_ALLOW_METHODS = [
+    'GET',
+    'POST',
+    'PUT',
+    'DELETE',
+    'OPTIONS',
 ]
 
 
@@ -66,7 +77,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
@@ -80,6 +91,10 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+CORS_ORIGIN_WHITELIST = [
+    'http://localhost:3000',  # Frontend URL
+]
+
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny'
@@ -90,11 +105,11 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',  # For token-based auth
+        'rest_framework.authentication.SessionAuthentication',  # For session-based auth
+    ),
 }
-
-
-CORS_ORIGIN_ALLOW_ALL = True
-CORS_ALLOW_ALL_ORIGINS = True
 
 ROOT_URLCONF = 'project.urls'
 
