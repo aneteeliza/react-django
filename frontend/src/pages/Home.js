@@ -14,6 +14,7 @@ export default function Home() {
   const [selectedPerson, setSelectedPerson] = useState(null);
   const [showModal, setShowModal] = useState(false); // State to control modal visibility
   const [selectedDatabaseName, setSelectedDatabaseName] = useState('Kritušie un bez vēsts pazudušie leģionāri');
+  
 
   const databaseEndpoints = {
     brigade: 'http://localhost:8000/brigade/',
@@ -153,22 +154,52 @@ export default function Home() {
       <Modal show={selectedPerson !== null} onHide={() => setSelectedPerson(null)}>
   <Modal.Header closeButton>
     <Modal.Title>
-      Informācija par {selectedPerson?.vards} {selectedPerson?.uzvards} {selectedPerson?.vards_uzvards} {selectedPerson?.uzvards_un_vards}
+      Informācija par <strong>{selectedPerson?.vards} {selectedPerson?.uzvards} {selectedPerson?.vards_uzvards} {selectedPerson?.uzvards_un_vards}</strong>
     </Modal.Title>
   </Modal.Header>
   <Modal.Body>
-    <p><strong>Dzimsanas datums:</strong> {selectedPerson?.dzimsanas_datums || 'Nav minētas'}</p>
-    <p><strong>Dienesta pakāpe:</strong> {selectedPerson?.dienesta_pakape || selectedPerson?.pakape || 'Nav minētas'}</p>
-    <p><strong>Dienesta vienība:</strong> {selectedPerson?.dienesta_vieniba || selectedPerson?.vieniba || 'Nav minētas'}</p>
-    <p><strong>Nometnes nodalījums:</strong> {selectedPerson?.nometnes_nodalijums || 'Nav minētas'}</p>
-    <p><strong>Aizbraucis uz PSRS:</strong> {selectedPerson?.aizbraucis_uz_psrs || 'Nav minētas'}</p>
-    <p><strong>Nāve:</strong> {selectedPerson?.miris || selectedPerson?.kritis_un_miris_no_ievainojuma_un_kad || 'Nav minētas'}</p>
-    <p><strong>Apbedīšanas vieta:</strong> {selectedPerson?.apbedisanas_vieta || 'Nav minētas'}</p>
-    <p><strong>Ordenis:</strong> {selectedPerson?.ordenis || 'Nav minētas'}</p>
-    <p><strong>Ordeņa pakāpe:</strong> {selectedPerson?.ordeņa_pakape || 'Nav minētas'}</p>
-    <p><strong>Arhīva lieta:</strong> {selectedPerson?.arhīva_lieta || 'Nav minētas'}</p>
-    <p><strong>Piezīmes:</strong> {selectedPerson?.piezimes || 'Nav minētas'}</p>
-  </Modal.Body>
+  {selectedDatabase === 'brigade' ? (
+    <>
+      <p><strong>Uzvārds un Vārds:</strong> {selectedPerson?.uzvards_un_vards || 'Nav minētas'}</p>
+      <p><strong>Pakāpe:</strong> {selectedPerson?.pakape || 'Nav minētas'}</p>
+      <p><strong>Dienesta vienība:</strong> {selectedPerson?.dienesta_vieniba || 'Nav minētas'}</p>
+      <p><strong>Ordenis:</strong> {selectedPerson?.ordenis || 'Nav minētas'}</p>
+      <p><strong>Ordeņa pakāpe:</strong> {selectedPerson?.ordeņa_pakape || 'Nav minētas'}</p>
+      <p><strong>Piezīmes:</strong> {selectedPerson?.piezimes || 'Nav minētas'}</p>
+      <p><strong>Arhīva lieta:</strong> {selectedPerson?.arhīva_lieta || 'Nav minētas'}</p>
+    </>
+  ) : selectedDatabase === 'mobilizetie' ? (
+    <>
+      <p><strong>Uzvārds:</strong> {selectedPerson?.uzvards || 'Nav minētas'}</p>
+      <p><strong>Vārds:</strong> {selectedPerson?.vards || 'Nav minētas'}</p>
+      <p><strong>Dzimsanas datums:</strong> {selectedPerson?.dzimsanas_datums || 'Nav minētas'}</p>
+    </>
+  ) : selectedDatabase === 'kritusie' ? (
+    <>
+      <p><strong>Vārds un Uzvārds:</strong> {selectedPerson?.vards_uzvards || 'Nav minētas'}</p>
+      <p><strong>Dienesta pakāpe:</strong> {selectedPerson?.dienesta_pakape || 'Nav minētas'}</p>
+      <p><strong>Vienība:</strong> {selectedPerson?.vieniba || 'Nav minētas'}</p>
+      <p><strong>Kritis un miris no ievainojuma un kad:</strong> {selectedPerson?.kritis_un_miris_no_ievainojuma_un_kad || 'Nav minētas'}</p>
+      <p><strong>Apbedīšanas vieta:</strong> {selectedPerson?.apbedisanas_vieta || 'Nav minētas'}</p>
+      <p><strong>Piezīmes:</strong> {selectedPerson?.piezimes || 'Nav minētas'}</p>
+    </>
+  ) : selectedDatabase === 'zedelgema' ? (
+    <>
+      <p><strong>Uzvārds:</strong> {selectedPerson?.uzvards || 'Nav minētas'}</p>
+      <p><strong>Vārds:</strong> {selectedPerson?.vards || 'Nav minētas'}</p>
+      <p><strong>Dzimsanas datums:</strong> {selectedPerson?.dzimsanas_datums || 'Nav minētas'}</p>
+      <p><strong>Dienesta pakāpe:</strong> {selectedPerson?.dienesta_pakape || 'Nav minētas'}</p>
+      <p><strong>Dienesta vienība:</strong> {selectedPerson?.dienesta_vieniba || 'Nav minētas'}</p>
+      <p><strong>Nometnes nodalījums:</strong> {selectedPerson?.nometnes_nodalijums || 'Nav minētas'}</p>
+      <p><strong>Aizbraucis uz PSRS:</strong> {selectedPerson?.aizbraucis_uz_psrs || 'Nav minētas'}</p>
+      <p><strong>Nāve:</strong> {selectedPerson?.miris || 'Nav minētas'}</p>
+      <p><strong>Piezīmes:</strong> {selectedPerson?.piezimes || 'Nav minētas'}</p>
+    </>
+  ) : (
+    <p>No database selected</p>
+  )}
+</Modal.Body>
+
   <Modal.Footer>
     <Button variant="secondary" onClick={() => setSelectedPerson(null)}>
       Aizvērt

@@ -1,4 +1,5 @@
 # Make sure you have a serializer for user
+from django.contrib.auth import authenticate
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.models import User
@@ -293,3 +294,43 @@ def unified_search_view(request):
 #         return JsonResponse({'error': form.errors}, status=400)
 
 #     return JsonResponse({'error': 'Invalid method'}, status=405)
+
+
+class ChangePasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request):
+        serializer = ChangePasswordSerializer(
+            data=request.data, context={'request': request})
+        if serializer.is_valid():
+            user = request.user
+            user.set_password(serializer.validated_data['new_password'])
+            user.save()
+            return Response({'success': 'Password changed successfully.'}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    # def put(self, request):
+    #     user = request.user
+    #     current_password = request.data.get('currentPassword')
+    #     new_password = request.data.get('newPassword')
+
+    #     # Check if the current password is correct
+    #     if not user.check_password(current_password):
+    #         return Response({'error': 'Current password is incorrect.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    #     # Validate new password (optional, you can add custom validation)
+    #     if len(new_password) < 8:
+    #         return Response({'error': 'New password must be at least 8 characters long.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    #     # Set the new password
+    #     user.set_password(new_password)
+    #     user.save()
+
+    #     return Response({'success': 'Password changed successfully.'}, status=status.HTTP_200_OK)
+
+
+# def check_username(request):
+#     username = request.GET.get('username', None)
+#     if username and User.objects.filter(username=username).exists():
+#         return JsonResponse({'exists': True})
+#     return JsonResponse({'exists': False})

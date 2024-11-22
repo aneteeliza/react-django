@@ -32,5 +32,9 @@ urlpatterns = [
     path('user', UserView.as_view(), name='user'),
     path('user/', UserProfileView.as_view(), name='user-profile'),
     path('user', UserProfileView.as_view(), name='user-profile'),
+    path('user/change-password', ChangePasswordView.as_view(),
+         name='change-password'),
+    # path('check-username', views.check_username, name='check_username'),
+    # path('change-password/', ChangePassword.as_view(), name='change_password'),
     # path('change-password/', change_password.as_view, name='change_password'),
 ]

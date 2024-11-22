@@ -1,24 +1,80 @@
 /* Set the width of the dropdown button */
 #dropdown-basic {
-    width: 500px; /* Adjust the width as desired */
-    margin: 0 auto;
-    padding: 10px;
-    margin-bottom: 10px;
-    border-radius: 15px;
-    border-color: #333;
-    background-color: #333;
+  width: 500px; /* Adjust the width as desired */
+  margin: 0 auto;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 15px;
+  border-color: #333;
+  background-color: #333;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
-  }
-  
-  /* Ensure dropdown menu spans full width of the button */
-  #dropdown-basic-menu {
-    width: 500px; /* Ensure dropdown menu matches button width */
-    border-radius: 15px;
+}
+
+/* Ensure dropdown menu spans full width of the button */
+#dropdown-basic-menu {
+  width: 500px; /* Ensure dropdown menu matches button width */
+  border-radius: 15px;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
-  }
-  
-  .mb-3 {
-    width: 500px; /* Adjust the width as desired */
-    margin: 0 auto;
-    padding: 10px;
-  }
+}
+
+.mb-3 {
+  width: 500px; /* Adjust the width as desired */
+  margin: 0 auto;
+  padding: 10px;
+}
+
+/* styles.css */
+.dropdown-item:hover {
+  background-color: #e1dddd;
+  cursor: pointer;
+}
+
+.card-overlay {
+  position: fixed; /* Ensures the card is always on top */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+  z-index: 1000; /* High z-index to be above other content */
+}
+
+.card {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  position: relative;
+  z-index: 1001;
+}
+
+.error-message {
+  color: red;
+  margin-bottom: 10px;
+}
+
+.success-message {
+  color: green;
+  margin-bottom: 10px;
+}
+
+.icon-button {
+  font-size: 20px;
+}
+
+.footer {
+  background-color: #343a40;
+  color: #ffffff;
+  text-align: center;
+  padding: 10px 0;
+  position: relative;
+  bottom: 0;
+  width: 100%;
+}
+
+.sticky-top {
+  z-index: 1030; /* Make sure it's above other elements if needed */
+}
