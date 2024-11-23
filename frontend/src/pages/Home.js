@@ -3,7 +3,9 @@ import axios from 'axios';
 import Dropdown from 'react-bootstrap/Dropdown';
 import Modal from 'react-bootstrap/Modal'; // Import the Modal component
 import Button from 'react-bootstrap/Button'; // Import the Button component for closing the modal
+import { BsArrowUp } from 'react-icons/bs';
 import './styles.css';
+import Card from 'react-bootstrap/Card';
 
 export default function Home() {
   const [nameSearch, setNameSearch] = useState('');
@@ -14,6 +16,7 @@ export default function Home() {
   const [selectedPerson, setSelectedPerson] = useState(null);
   const [showModal, setShowModal] = useState(false); // State to control modal visibility
   const [selectedDatabaseName, setSelectedDatabaseName] = useState('Kritušie un bez vēsts pazudušie leģionāri');
+  const [showTopButton, setShowTopButton] = useState(false);
   
 
   const databaseEndpoints = {
@@ -32,6 +35,51 @@ export default function Home() {
 
   const isBirthdateSearchEnabled = selectedDatabase === 'mobilizetie' || selectedDatabase === 'zedelgema';
 
+  // const fetchPeople = async () => {
+  //   try {
+  //     const endpoint = databaseEndpoints[selectedDatabase] || databaseEndpoints.brigade;
+  //     const searchTerms = nameSearch.trim().toLowerCase().split(/\s+/);
+      
+  //     const reformattedQueries = [
+  //       searchTerms.join(' '),
+  //       searchTerms.reverse().join(' '),
+  //     ];
+
+  //     let params = { name: reformattedQueries[0] };
+  //     if (isBirthdateSearchEnabled && birthdateSearch.trim() !== '') {
+  //       params.dzimsanas_datums = birthdateSearch.trim();
+  //     }
+
+  //     let results = [];
+  //     for (const query of reformattedQueries) {
+  //       params.name = query;
+  //       const response = await axios.get(endpoint, { params });
+  //       results = results.concat(response.data);
+  //     }
+
+  //     const filteredPeople = results.filter((person) => {
+  //       const combinedName = [
+  //         person.vards_uzvards || '',
+  //         person.vards || '',
+  //         person.uzvards || '',
+  //         person.uzvards_un_vards || ''
+  //       ].join(' ').toLowerCase().trim();
+  
+  //       const allTermsMatch = searchTerms.every((term) => combinedName.includes(term));
+  //       const birthdateMatch = !isBirthdateSearchEnabled || (birthdateSearch.trim() === '' || person.dzimsanas_datums === birthdateSearch.trim());
+        
+  //       return allTermsMatch && birthdateMatch;
+  //     });
+  
+  //     setPeople(filteredPeople);
+  //     setIsSearching(true);
+  //   } catch (error) {
+  //     console.error('Error fetching data:', error);
+  //     setPeople([]);
+  //     setIsSearching(true);
+  //   }
+  // };
+
   const fetchPeople = async () => {
     try {
       const endpoint = databaseEndpoints[selectedDatabase] || databaseEndpoints.brigade;
@@ -41,12 +89,12 @@ export default function Home() {
         searchTerms.join(' '),
         searchTerms.reverse().join(' '),
       ];
-
+  
       let params = { name: reformattedQueries[0] };
       if (isBirthdateSearchEnabled && birthdateSearch.trim() !== '') {
         params.dzimsanas_datums = birthdateSearch.trim();
       }
-
+  
       let results = [];
       for (const query of reformattedQueries) {
         params.name = query;
@@ -54,13 +102,28 @@ export default function Home() {
         results = results.concat(response.data);
       }
 
-      const filteredPeople = results.filter((person) => {
-        const combinedName = [
-          person.vards_uzvards || '',
-          person.vards || '',
-          person.uzvards || '',
-          person.uzvards_un_vards || ''
-        ].join(' ').toLowerCase().trim();
+      // Use a Set to filter out duplicates based on a unique key (e.g., `person.vards_uzvards`)
+    const uniquePeople = new Map();
+    results.forEach((person) => {
+      const uniqueKey = `${person.vards_uzvards || person.uzvards || ''}-${person.vards || ''}`;
+      uniquePeople.set(uniqueKey, person);
+    });
+
+    const filteredPeople = Array.from(uniquePeople.values()).filter((person) => {
+      const combinedName = [
+        person.vards_uzvards || '',
+        person.vards || '',
+        person.uzvards || '',
+        person.uzvards_un_vards || ''
+      ].join(' ').toLowerCase().trim();
+  
+      // const filteredPeople = results.filter((person) => {
+      //   const combinedName = [
+      //     person.vards_uzvards || '',
+      //     person.vards || '',
+      //     person.uzvards || '',
+      //     person.uzvards_un_vards || ''
+      //   ].join(' ').toLowerCase().trim();
   
         const allTermsMatch = searchTerms.every((term) => combinedName.includes(term));
         const birthdateMatch = !isBirthdateSearchEnabled || (birthdateSearch.trim() === '' || person.dzimsanas_datums === birthdateSearch.trim());
@@ -68,7 +131,24 @@ export default function Home() {
         return allTermsMatch && birthdateMatch;
       });
   
-      setPeople(filteredPeople);
+      // Sort filteredPeople by surname, then by first name
+      const sortedPeople = filteredPeople.sort((a, b) => {
+        const surnameA = (a.uzvards || a.vards_uzvards || a.uzvards_un_vards || '').toLowerCase();
+        const surnameB = (b.uzvards || b.vards_uzvards || b.uzvards_un_vards || '').toLowerCase();
+        
+        if (surnameA < surnameB) return -1;
+        if (surnameA > surnameB) return 1;
+  
+        const firstNameA = (a.vards || '').toLowerCase();
+        const firstNameB = (b.vards || '').toLowerCase();
+        
+        if (firstNameA < firstNameB) return -1;
+        if (firstNameA > firstNameB) return 1;
+  
+        return 0;
+      });
+  
+      setPeople(sortedPeople);
       setIsSearching(true);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -76,6 +156,25 @@ export default function Home() {
       setIsSearching(true);
     }
   };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 300) {
+        setShowTopButton(true);
+      } else {
+        setShowTopButton(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Scroll to top function
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  
 
   const handleNameSearch = (event) => setNameSearch(event.target.value);
   const handleBirthdateSearch = (event) => setBirthdateSearch(event.target.value);
@@ -96,6 +195,7 @@ export default function Home() {
 
   return (
     <div className="search">
+      <Card className="p-4 shadow-lg">
       <h2>Meklēšana</h2>
 
       <Dropdown onSelect={handleDatabaseSelect}>
@@ -149,9 +249,16 @@ export default function Home() {
           ))}
         </ul>
       )}
+      </Card>
+
+      {showTopButton && (
+        <button className="back-to-top" onClick={scrollToTop}>
+          <BsArrowUp size={20} /> {/* Use the icon here */}
+        </button>
+      )}
 
       {/* Modal for detailed view */}
-      <Modal show={selectedPerson !== null} onHide={() => setSelectedPerson(null)}>
+      <Modal show={selectedPerson !== null} onHide={() => setSelectedPerson(null)} className="d-flex  align-items-center">
   <Modal.Header closeButton>
     <Modal.Title>
       Informācija par <strong>{selectedPerson?.vards} {selectedPerson?.uzvards} {selectedPerson?.vards_uzvards} {selectedPerson?.uzvards_un_vards}</strong>
@@ -198,10 +305,11 @@ export default function Home() {
   ) : (
     <p>No database selected</p>
   )}
+  
 </Modal.Body>
 
   <Modal.Footer>
-    <Button variant="secondary" onClick={() => setSelectedPerson(null)}>
+    <Button variant="dark" onClick={() => setSelectedPerson(null)}>
       Aizvērt
     </Button>
   </Modal.Footer>
@@ -210,6 +318,8 @@ export default function Home() {
     </div>
   );
 }
+
+///////////////////////////////////////////////////////////////////////////////////
 
 
 // import React, { useState, useEffect } from 'react';

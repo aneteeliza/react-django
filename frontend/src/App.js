@@ -1,12 +1,11 @@
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
-import { Container, Navbar, Button, Form, Card } from 'react-bootstrap';
+import { Container, Navbar, Button, Form, Card, Alert } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Route, Routes, Link, Navigate, useNavigate } from 'react-router-dom'; // Import routing components
 import Home from './pages/Home'; // Import Home page
 import './App.css';
 import Profils from './pages/Profile';
-import { PersonCircle, BoxArrowRight } from 'react-bootstrap-icons'; // Import React Bootstrap icons
 import { FaHome, FaSearch, FaUser, FaSignOutAlt, FaSignInAlt, FaUserPlus } from 'react-icons/fa'; // Add FaHome and FaSearch here
 
 axios.defaults.baseURL = 'http://127.0.0.1:8000';
@@ -25,6 +24,7 @@ function App() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate(); // Hook to programmatically navigate
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     const user = localStorage.getItem('currentUser');
@@ -35,8 +35,19 @@ function App() {
     setRegistrationToggle(!registrationToggle); // Toggle registration state
   }
   
+  function validateFields() {
+    if (!email || !password || (registrationToggle && !username)) {
+      setErrorMessage('Visi lauki ir jāaizpilda!'); // "All fields are required!"
+      return false;
+    }
+    setErrorMessage('');
+    return true;
+  }
+
   function submitLogin(e) {
     e.preventDefault();
+    if (!validateFields()) return;
+
     client.post("/login", { email, password })
       .then(function() {
         localStorage.setItem('currentUser', 'true');
@@ -50,6 +61,8 @@ function App() {
   
   function submitRegistration(e) {
     e.preventDefault();
+    if (!validateFields()) return;
+
     client.post("/register", { email, username, password })
       .then(function() {
         client.post("/login", { email, password })
@@ -67,6 +80,7 @@ function App() {
         localStorage.removeItem('currentUser');
         setCurrentUser(false);
         setEmail('');  // Clear the email field
+        setUsername('');
         setPassword('');  // Clear the password field
         navigate('/');  // Navigate to the login page after logout
       });
@@ -145,15 +159,16 @@ function App() {
               <Card className="w-70 text-center p-4 shadow-lg rounded">
                 <h3 className="mb-4">Publiskā datubāze "Latviešu karavīri"</h3>
                 {/* About the Database Section */}
-                <section className="mb-4">
-                  <h4 className="mb-3">Par datubāzi</h4>
+                <section className="mb-4 text-start">
+                  <h4>Par datubāzi</h4>
                   <p className="text-muted">
                     Datubāze "Latviešu karavīri" piedāvā iespēju piekļūt informācijai par latviešu karavīriem. Šeit var atrast informāciju par karavīru vēsturi, viņu dalību dažādos militārajos notikumos, un daudz ko citu. Datubāze ir izveidota, lai atvieglotu piekļuvi šiem vēsturiskajiem datiem, un ir piemērota gan pētniekiem, gan interesentiem.
                   </p>
                 </section>
+                <hr />
                 {/* FAQ Section */}
-                <section className="mb-4">
-                  <h4 className="mb-3">BUJ (Biežāk Uzdotie Jautājumi)</h4>
+                <section className="mb-4 text-start">
+                  <h4>BUJ (Biežāk Uzdotie Jautājumi)</h4>
                   <ul className="list-unstyled text-muted">
                     <li className="mb-2">
                       <strong>Kā reģistrēties?</strong><br />
@@ -169,17 +184,18 @@ function App() {
                     </li>
                   </ul>
                 </section>
+                <hr />
 
                 {/* Contact Section */}
                 <section>
-                  <h4 className="mb-3">Kontakti</h4>
-                  <p className="text-muted">
+                  <h4 className="text-start">Kontakti</h4>
+                  <p className="text-muted text-start">
                     Atbildīgā institūcija: <a href="https://www.karamuzejs.lv/" className="text-decoration-none">Latvijas Kara muzejs</a>
                   </p>
-                  <p className="text-muted">
+                  <p className="text-muted text-start">
                     E-pasts saziņai: <a href="mailto:datubaze@karamuzejs.lv" className="text-decoration-none">datubaze@karamuzejs.lv</a>
                   </p>
-                  <p className="text-muted">
+                  <p className="text-muted text-start">
                     Atbildes uz e-pastiem tiek sniegtas darba dienās, darba laikā. Jautājumiem par datu bāzes saturu atbildēs Vēstures departaments, savukārt par tehniskām problēmām, ja nepieciešams, varēs palīdzēt IT Atbalsta komanda.
                   </p>
                 </section>
@@ -188,6 +204,7 @@ function App() {
               <Card className="w-50 p-4 shadow-lg rounded">
                 <h4 className="text-center mb-4">{registrationToggle ? 'Reģistrēties' : 'Pieteikties'}</h4>
                 <Form onSubmit={registrationToggle ? submitRegistration : submitLogin}>
+                {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
                   <Form.Group className="mb-3 w-100">
                     <Form.Label>E-pasta adrese</Form.Label>
                     <Form.Control
@@ -223,12 +240,12 @@ function App() {
                     />
                   </Form.Group>
 
-                  <Button variant="success" type="submit" className="w-100 rounded-pill">
+                  <Button variant="primary" type="submit" className="w-100 rounded-pill">
                     Pieteikties
                   </Button>
                 </Form>
                 <div className="mt-3 text-center">
-                  <Button variant="link" onClick={update_form_btn} className="text-success">
+                  <Button variant="link" onClick={update_form_btn} className="text-primary">
                     {registrationToggle ? 'Jau ir lietotāja konts? Pieteikties' : "Nav lietotāja konts? Reģistrēties"}
                   </Button>
                 </div>

@@ -88,11 +88,12 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Form, Button, Container, Spinner, Alert, Modal } from 'react-bootstrap';
+import { Form, Button, Container, Spinner, Alert, Modal, Card } from 'react-bootstrap';
 import './styles.css';
 
 function Profils() {
   const [profile, setProfile] = useState({ email: '', username: '' });
+  const [originalProfile, setOriginalProfile] = useState({ email: '', username: '' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);  // General error state for profile fetch
   const [editMode, setEditMode] = useState(false);
@@ -110,10 +111,12 @@ function Profils() {
     axios
       .get('http://127.0.0.1:8000/user')
       .then(response => {
-        setProfile({
+        const fetchedProfile = {
           email: response.data.user.email,
           username: response.data.user.username,
-        });
+        };
+        setProfile(fetchedProfile);
+        setOriginalProfile(fetchedProfile);  // Save the initial profile data
         setLoading(false); // Stop loading after data is fetched
       })
       .catch(error => {
@@ -229,7 +232,8 @@ function Profils() {
 
   return (
     <Container className="p-4">
-      <div className="mb-4">
+      <div className="d-flex justify-content-center align-items-center">
+        <Card className="w-50 text-center p-4 shadow-lg rounded">
         <h1>Profils</h1>
 
         {loading ? (
@@ -246,7 +250,7 @@ function Profils() {
               </Alert>
             )}
             <Form>
-              <Form.Group className="mb-3">
+              <Form.Group className="mb-3 w-100">
                 <Form.Label>E-pasta adrese</Form.Label>
                 <Form.Control
                   type="email"
@@ -258,7 +262,7 @@ function Profils() {
                 />
               </Form.Group>
 
-              <Form.Group className="mb-3">
+              <Form.Group className="mb-3 w-100">
                 <Form.Label>Lietotājvārds</Form.Label>
                 <Form.Control
                   type="text"
@@ -270,15 +274,43 @@ function Profils() {
                 />
               </Form.Group>
 
-              <Button variant="success" onClick={handleEditToggle} className="me-2">
+              {/* <Button variant="primary" onClick={handleEditToggle} className="me-2">
                 {editMode ? 'Saglabāt izmaiņas' : 'Rediģēt'}
               </Button>
-              <Button variant="link" onClick={() => setShowPasswordModal(true)} className="text-success">
+              <Button variant="link" onClick={() => setShowPasswordModal(true)} className="text-primary">
                 Nomainīt paroli
-              </Button>
+              </Button> */}
+              <Button variant="primary" onClick={handleEditToggle} className="me-2">
+                  {editMode ? 'Saglabāt izmaiņas' : 'Rediģēt'}
+                </Button>
+                {editMode && (
+                  <Button
+                    variant="dark"
+                    onClick={() => {
+                      setEditMode(false);
+                      setProfile(originalProfile); // Reset profile to original values
+                    }}
+                  >
+                    Atcelt
+                  </Button>
+                )}
+
+                {/* Show "Nomainīt paroli" only when not in edit mode */}
+                {!editMode && (
+                  <Button
+                    variant="link"
+                    onClick={() => setShowPasswordModal(true)}
+                    className="text-primary"
+                  >
+                    Nomainīt paroli
+                  </Button>
+                )}
+
             </Form>
+            
           </>
         )}
+        </Card>
       </div>
 
       {/* Modal for Password Change */}
@@ -318,10 +350,10 @@ function Profils() {
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowPasswordModal(false)}>
+          <Button variant="dark" onClick={() => setShowPasswordModal(false)}>
             Aizvērt
           </Button>
-          <Button variant="success" onClick={handleChangePassword}>
+          <Button variant="primary" onClick={handleChangePassword}>
             Saglabāt jauno paroli
           </Button>
         </Modal.Footer>
