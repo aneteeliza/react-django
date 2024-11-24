@@ -14,10 +14,52 @@ export default function Home() {
   const [people, setPeople] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [selectedPerson, setSelectedPerson] = useState(null);
+  // eslint-disable-next-line
   const [showModal, setShowModal] = useState(false); // State to control modal visibility
   const [selectedDatabaseName, setSelectedDatabaseName] = useState('Kritušie un bez vēsts pazudušie leģionāri');
   const [showTopButton, setShowTopButton] = useState(false);
+  const [isStaff, setIsStaff] = useState(false);
+  const [profile, setProfile] = useState({ email: '', username: '' });
+  const [originalProfile, setOriginalProfile] = useState({ email: '', username: '' });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const [searchTerm, setSearchTerm] = useState('');
+const [dienestaVieniba, setDienestaVieniba] = useState('');
+
   
+  const [dienestaVienibaSearch, setDienestaVienibaSearch] = useState('');
+  const [vienibaSearch, setVienibaSearch] = useState('');
+
+  const handleDienestaVienibaSearch = (event) => setDienestaVienibaSearch(event.target.value);
+  const handleVienibaSearch = (event) => setVienibaSearch(event.target.value);
+  
+  useEffect(() => {
+    // Fetch user profile data when component mounts
+    axios
+      .get('http://127.0.0.1:8000/user')
+      .then(response => {
+        const fetchedProfile = {
+          email: response.data.user.email,
+          username: response.data.user.username,
+        };
+        setProfile(fetchedProfile);
+        setOriginalProfile(fetchedProfile);  // Save the initial profile data
+  
+        // Check if the user is a staff member and update the state
+        setIsStaff(response.data.user.is_staff);  // Assuming the backend provides is_staff field
+  
+        setLoading(false); // Stop loading after data is fetched
+      })
+      .catch(error => {
+        setError(
+          error.response ? error.response.data : 'An error occurred while fetching the data.'
+        );
+        setLoading(false); // Stop loading on error
+      });
+  }, []);
+  
+
 
   const databaseEndpoints = {
     brigade: 'http://localhost:8000/brigade/',
@@ -35,56 +77,11 @@ export default function Home() {
 
   const isBirthdateSearchEnabled = selectedDatabase === 'mobilizetie' || selectedDatabase === 'zedelgema';
 
-  // const fetchPeople = async () => {
-  //   try {
-  //     const endpoint = databaseEndpoints[selectedDatabase] || databaseEndpoints.brigade;
-  //     const searchTerms = nameSearch.trim().toLowerCase().split(/\s+/);
-      
-  //     const reformattedQueries = [
-  //       searchTerms.join(' '),
-  //       searchTerms.reverse().join(' '),
-  //     ];
-
-  //     let params = { name: reformattedQueries[0] };
-  //     if (isBirthdateSearchEnabled && birthdateSearch.trim() !== '') {
-  //       params.dzimsanas_datums = birthdateSearch.trim();
-  //     }
-
-  //     let results = [];
-  //     for (const query of reformattedQueries) {
-  //       params.name = query;
-  //       const response = await axios.get(endpoint, { params });
-  //       results = results.concat(response.data);
-  //     }
-
-  //     const filteredPeople = results.filter((person) => {
-  //       const combinedName = [
-  //         person.vards_uzvards || '',
-  //         person.vards || '',
-  //         person.uzvards || '',
-  //         person.uzvards_un_vards || ''
-  //       ].join(' ').toLowerCase().trim();
-  
-  //       const allTermsMatch = searchTerms.every((term) => combinedName.includes(term));
-  //       const birthdateMatch = !isBirthdateSearchEnabled || (birthdateSearch.trim() === '' || person.dzimsanas_datums === birthdateSearch.trim());
-        
-  //       return allTermsMatch && birthdateMatch;
-  //     });
-  
-  //     setPeople(filteredPeople);
-  //     setIsSearching(true);
-  //   } catch (error) {
-  //     console.error('Error fetching data:', error);
-  //     setPeople([]);
-  //     setIsSearching(true);
-  //   }
-  // };
-
   const fetchPeople = async () => {
     try {
       const endpoint = databaseEndpoints[selectedDatabase] || databaseEndpoints.brigade;
       const searchTerms = nameSearch.trim().toLowerCase().split(/\s+/);
-      
+  
       const reformattedQueries = [
         searchTerms.join(' '),
         searchTerms.reverse().join(' '),
@@ -95,53 +92,61 @@ export default function Home() {
         params.dzimsanas_datums = birthdateSearch.trim();
       }
   
+      // Include dienesta vieniba or vieniba search based on selected database
+      if (selectedDatabase === 'brigade' && dienestaVienibaSearch.trim() !== '') {
+        params.dienesta_vieniba = dienestaVienibaSearch.trim();
+      } else if (selectedDatabase === 'kritusie' && vienibaSearch.trim() !== '') {
+        params.vieniba = vienibaSearch.trim();
+      } else if (selectedDatabase === 'zedelgema' && dienestaVienibaSearch.trim() !== '') {
+        params.dienesta_vieniba = dienestaVienibaSearch.trim();
+      }
+  
       let results = [];
       for (const query of reformattedQueries) {
         params.name = query;
         const response = await axios.get(endpoint, { params });
         results = results.concat(response.data);
       }
-
-      // Use a Set to filter out duplicates based on a unique key (e.g., `person.vards_uzvards`)
-    const uniquePeople = new Map();
-    results.forEach((person) => {
-      const uniqueKey = `${person.vards_uzvards || person.uzvards || ''}-${person.vards || ''}`;
-      uniquePeople.set(uniqueKey, person);
-    });
-
-    const filteredPeople = Array.from(uniquePeople.values()).filter((person) => {
-      const combinedName = [
-        person.vards_uzvards || '',
-        person.vards || '',
-        person.uzvards || '',
-        person.uzvards_un_vards || ''
-      ].join(' ').toLowerCase().trim();
   
-      // const filteredPeople = results.filter((person) => {
-      //   const combinedName = [
-      //     person.vards_uzvards || '',
-      //     person.vards || '',
-      //     person.uzvards || '',
-      //     person.uzvards_un_vards || ''
-      //   ].join(' ').toLowerCase().trim();
+      // Filter out duplicates based on a unique key
+      const uniquePeople = new Map();
+      results.forEach((person) => {
+        const uniqueKey = `${person.uzvards_un_vards || person.vards_uzvards || person.uzvards || ''}-${person.vards || ''}`;
+        uniquePeople.set(uniqueKey, person);
+      });
+  
+      const filteredPeople = Array.from(uniquePeople.values()).filter((person) => {
+        const combinedName = [
+          person.vards_uzvards || '',
+          person.vards || '',
+          person.uzvards || '',
+          person.uzvards_un_vards || ''
+        ].join(' ').toLowerCase().trim();
   
         const allTermsMatch = searchTerms.every((term) => combinedName.includes(term));
-        const birthdateMatch = !isBirthdateSearchEnabled || (birthdateSearch.trim() === '' || person.dzimsanas_datums === birthdateSearch.trim());
-        
-        return allTermsMatch && birthdateMatch;
+  
+        const birthdateMatch = !isBirthdateSearchEnabled || 
+          (birthdateSearch.trim() === '' || 
+          person.dzimsanas_datums.includes(birthdateSearch.trim())); // Allows partial date match
+  
+        // Check for dienesta vieniba or vieniba match
+        const dienestaMatch = selectedDatabase === 'brigade' || 'zedelgema' ? 
+          (person.dienesta_vieniba || '').toLowerCase().includes(dienestaVienibaSearch.toLowerCase()) : true;
+        const vienibaMatch = selectedDatabase === 'kritusie' ? 
+          (person.vieniba || '').toLowerCase().includes(vienibaSearch.toLowerCase()) : true;
+
+        return allTermsMatch && birthdateMatch && dienestaMatch && vienibaMatch;
       });
   
       // Sort filteredPeople by surname, then by first name
       const sortedPeople = filteredPeople.sort((a, b) => {
         const surnameA = (a.uzvards || a.vards_uzvards || a.uzvards_un_vards || '').toLowerCase();
         const surnameB = (b.uzvards || b.vards_uzvards || b.uzvards_un_vards || '').toLowerCase();
-        
         if (surnameA < surnameB) return -1;
         if (surnameA > surnameB) return 1;
   
         const firstNameA = (a.vards || '').toLowerCase();
         const firstNameB = (b.vards || '').toLowerCase();
-        
         if (firstNameA < firstNameB) return -1;
         if (firstNameA > firstNameB) return 1;
   
@@ -156,6 +161,7 @@ export default function Home() {
       setIsSearching(true);
     }
   };
+  
 
   useEffect(() => {
     const handleScroll = () => {
@@ -184,14 +190,36 @@ export default function Home() {
     setSelectedDatabaseName(databaseNames[database] || 'Izvēlies datu bāzi');
   };
 
+  // useEffect(() => {
+  //   // Check if any search field has content before triggering fetchPeople
+  //   const isAnySearchTermEntered = 
+  //     nameSearch.trim() !== '' || 
+  //     (isBirthdateSearchEnabled && birthdateSearch.trim() !== '') || 
+  //     dienestaVienibaSearch.trim() !== '' || 
+  //     vienibaSearch.trim() !== '';
+  
+  //   if (isAnySearchTermEntered) {
+  //     fetchPeople(); // Fetch results if any search term is entered
+  //   } else {
+  //     setPeople([]);  // Clear the people array
+  //     setIsSearching(false);  // Indicate that no search is being done
+  //   }
+  //   // eslint-disable-next-line
+  // }, [nameSearch, birthdateSearch, dienestaVienibaSearch, vienibaSearch, selectedDatabase]);
+  
+
+
   useEffect(() => {
-    if (nameSearch.trim() !== '' || (isBirthdateSearchEnabled && birthdateSearch.trim() !== '')) {
+    if (nameSearch.trim() !== '' || (isBirthdateSearchEnabled && birthdateSearch.trim() !== '' || 
+    dienestaVienibaSearch.trim() !== '' || 
+    vienibaSearch.trim() !== '')) {
       fetchPeople();
     } else {
       setPeople([]);
       setIsSearching(false);
     }
-  }, [nameSearch, birthdateSearch, selectedDatabase]);
+    // eslint-disable-next-line
+  }, [nameSearch, birthdateSearch, dienestaVienibaSearch, vienibaSearch, selectedDatabase]);
 
   return (
     <div className="search">
@@ -219,6 +247,41 @@ export default function Home() {
         placeholder="Meklēt pēc vārda un/vai uzvārda"
         title="Ieraksti vārdu un/vārdu"
       />
+
+
+      {/* Conditional Inputs for Dienesta Vienība and Vienība */}
+      {isStaff && selectedDatabase === 'brigade' && (
+        <input
+          type="text"
+          id="dienestaVienibaSearch"
+          value={dienestaVienibaSearch}
+          onChange={handleDienestaVienibaSearch}
+          placeholder="Meklēt pēc dienesta vienības"
+          title="Ieraksti dienesta vienību"
+        />
+      )}
+
+      {isStaff && selectedDatabase === 'zedelgema' && (
+        <input
+          type="text"
+          id="dienestaVienibaSearch"
+          value={dienestaVienibaSearch}
+          onChange={handleDienestaVienibaSearch}
+          placeholder="Meklēt pēc dienesta vienības"
+          title="Ieraksti dienesta vienību"
+        />
+      )}
+
+      {isStaff && selectedDatabase === 'kritusie' && (
+        <input
+          type="text"
+          id="vienibaSearch"
+          value={vienibaSearch}
+          onChange={handleVienibaSearch}
+          placeholder="Meklēt pēc dienesta vienības"
+          title="Ieraksti dienesta vienību"
+        />
+      )}
 
       {isBirthdateSearchEnabled && (
         <input
@@ -318,475 +381,3 @@ export default function Home() {
     </div>
   );
 }
-
-///////////////////////////////////////////////////////////////////////////////////
-
-
-// import React, { useState, useEffect } from 'react';
-// import axios from 'axios';
-// import Dropdown from 'react-bootstrap/Dropdown';
-// import './styles.css';
-
-// export default function Home() {
-//   const [nameSearch, setNameSearch] = useState('');
-//   const [birthdateSearch, setBirthdateSearch] = useState(''); // New state for birthdate
-//   const [selectedDatabase, setSelectedDatabase] = useState('kritusie'); // Default to 'kritusie'
-//   const [people, setPeople] = useState([]);
-//   const [isSearching, setIsSearching] = useState(false);
-//   const [selectedPerson, setSelectedPerson] = useState(null);
-//   const [selectedDatabaseName, setSelectedDatabaseName] = useState('Kritušie un bez vēsts pazudušie leģionāri'); // Display name of the default database
-
-//   // Define the API endpoints for each database
-//   const databaseEndpoints = {
-//     brigade: 'http://localhost:8000/brigade/',
-//     zedelgema: 'http://127.0.0.1:8000/zedelgema/',
-//     mobilizetie: 'http://127.0.0.1:8000/mobilizetie/',
-//     kritusie: 'http://127.0.0.1:8000/kritusie/',
-//   };
-
-//   // Mapping of event keys to user-friendly names
-//   const databaseNames = {
-//     brigade: '2.brigādes apbalvotie',
-//     zedelgema: 'Zedelgemas karagūstekņu nometnē ieslodzītie',
-//     mobilizetie: 'Latviešu leģionā mobilizētie',
-//     kritusie: 'Kritušie un bez vēsts pazudušie leģionāri',
-//   };
-
-//   // Check if birthdate search should be enabled
-//   const isBirthdateSearchEnabled = selectedDatabase === 'mobilizetie' || selectedDatabase === 'zedelgema';
-
-//   // Fetch data from the backend API using Axios
-//   const fetchPeople = async () => {
-//     try {
-//       console.log('Fetching data with:', nameSearch, birthdateSearch, selectedDatabase);
-  
-//       // Get the correct endpoint for the selected database
-//       const endpoint = databaseEndpoints[selectedDatabase] || databaseEndpoints.brigade;
-  
-//       // Trim and lower case the search input, then split by spaces
-//       const searchTerms = nameSearch.trim().toLowerCase().split(/\s+/);
-      
-//       // Generate multiple formats to search: "Jānis Lerhs" and "Lerhs Jānis"
-//       const reformattedQueries = [
-//         searchTerms.join(' '),                // Original input
-//         searchTerms.reverse().join(' ')       // Reversed input
-//       ];
-
-//       // Prepare parameters for the backend request
-//       let params = { name: reformattedQueries[0] };
-
-//       // Include birthdate in parameters if applicable
-//       if (isBirthdateSearchEnabled && birthdateSearch.trim() !== '') {
-//         params.dzimsanas_datums = birthdateSearch.trim();
-//       }
-
-//       // Fetch data from the backend
-//       let results = [];
-//       for (const query of reformattedQueries) {
-//         params.name = query;
-//         const response = await axios.get(endpoint, { params });
-//         results = results.concat(response.data);
-//       }
-  
-//       // Log to see if multiple formats return data
-//       console.log('API response:', results);
-  
-//       // Combine and filter results in the frontend
-//       const filteredPeople = results.filter((person) => {
-//         const combinedName = [
-//           person.vards_uzvards || '',
-//           person.vards || '',
-//           person.uzvards || '',
-//           person.uzvards_un_vards || ''
-//         ].join(' ').toLowerCase().trim();
-  
-//         const allTermsMatch = searchTerms.every((term) => combinedName.includes(term));
-
-//         // If birthdate search is enabled, match the birthdate as well
-//         const birthdateMatch = !isBirthdateSearchEnabled || (birthdateSearch.trim() === '' || person.dzimsanas_datums === birthdateSearch.trim());
-        
-//         return allTermsMatch && birthdateMatch;
-//       });
-  
-//       console.log('Filtered results:', filteredPeople);
-//       setPeople(filteredPeople);
-//       setIsSearching(true);
-//     } catch (error) {
-//       console.error('Error fetching data:', error);
-//       setPeople([]);
-//       setIsSearching(true);
-//     }
-//   };
-
-//   // Handle search input changes
-//   const handleNameSearch = (event) => setNameSearch(event.target.value);
-//   const handleBirthdateSearch = (event) => setBirthdateSearch(event.target.value);
-
-//   // Handle database selection change
-//   const handleDatabaseSelect = (database) => {
-//     setSelectedDatabase(database);
-//     setSelectedDatabaseName(databaseNames[database] || 'Izvēlies datu bāzi');
-//   };
-
-//   // Fetch data whenever the search term or database changes
-//   useEffect(() => {
-//     // Fetch data when a valid nameSearch term is entered, or the selectedDatabase changes
-//     if (nameSearch.trim() !== '' || (isBirthdateSearchEnabled && birthdateSearch.trim() !== '')) {
-//       fetchPeople();
-//     } else {
-//       setPeople([]); // Clear results if nameSearch is empty
-//       setIsSearching(false); // Reset search attempt indicator
-//     }
-//   }, [nameSearch, birthdateSearch, selectedDatabase]); // Depend on nameSearch, birthdateSearch, and selectedDatabase
-
-//   return (
-//     <div className="search">
-//       <h2>Meklēšana</h2>
-
-//       <Dropdown onSelect={handleDatabaseSelect}>
-//         <Dropdown.Toggle id="dropdown-basic">
-//           {selectedDatabaseName} {/* Display the selected database name */}
-//         </Dropdown.Toggle>
-
-//         <Dropdown.Menu id="dropdown-basic-menu">
-//           <Dropdown.Item eventKey="mobilizetie">Latviešu leģionā mobilizētie</Dropdown.Item>
-//           <Dropdown.Item eventKey="zedelgema">Zedelgemas karagūstekņu nometnē ieslodzītie</Dropdown.Item>
-//           <Dropdown.Item eventKey="kritusie">Kritušie un bez vēsts pazudušie leģionāri</Dropdown.Item>
-//           <Dropdown.Item eventKey="brigade">2.brigādes apbalvotie</Dropdown.Item>
-//         </Dropdown.Menu>
-//       </Dropdown>
-
-//       {/* Search for Name */}
-//       <input
-//         type="text"
-//         id="nameSearch"
-//         value={nameSearch}
-//         onChange={handleNameSearch}
-//         placeholder="Meklēt pēc vārda un/vai uzvārda"
-//         title="Ieraksti vārdu un/vai uzvārdu"
-//       />
-
-//       {/* Conditionally render birthdate search field */}
-//       {isBirthdateSearchEnabled && (
-//         <input
-//           type="text"
-//           id="birthdateSearch"
-//           value={birthdateSearch}
-//           onChange={handleBirthdateSearch}
-//           placeholder="Meklēt pēc dzimšanas datuma"
-//           title="Ieraksti dzimšanas datumu"
-//         />
-//       )}
-
-//       {/* Display filtered results */}
-//       {/* <ul id="myUL">
-//         {people.length > 0 ? (
-//           people.map((person, index) => (
-//             <li key={index}>
-//               <span>{person.vards_uzvards} {person.uzvards} {person.vards} {person.uzvards_un_vards} {person.dzimsanas_datums}</span><br />
-//             </li>
-//           ))
-//         ) : (
-//           isSearching && <li>No results found</li>
-//         )}
-//       </ul> */}
-
-//       {/* People list */}
-//       {isSearching && people.length === 0 && (
-//         <p>No results found for "{nameSearch}".</p>
-//       )}
-//       {isSearching && people.length > 0 && (
-//         <ul id="myUL">
-//           {people.map((person, index) => (
-//             <li
-//               key={index}
-//               onClick={() => {
-//                 setSelectedPerson(person);
-//                 console.log('Selected person:', person);  // Debugging selection
-//               }}
-//             >
-//               {/* <span>
-//                 {person.vards_uzvards || `${person.vards} ${person.uzvards}` || person.uzvards_un_vards} {person.dzimsanas_datums}
-//               </span> */}
-//               <span>{person.vards_uzvards} {person.uzvards} {person.vards} {person.uzvards_un_vards} {person.dzimsanas_datums}</span>
-//             </li>
-//           ))}
-//         </ul>
-//       )}
-
-//       {/* Detailed person view */}
-//       {selectedPerson && (
-//         <div className="person-details">
-//           <h3>Informācija par {selectedPerson.vards} {selectedPerson.uzvards} {selectedPerson.vards_uzvards} {selectedPerson.uzvards_un_vards}</h3>
-//           <p><strong>Dzimsanas datums:</strong> {selectedPerson.dzimsanas_datums}</p>
-//           <p><strong>Dienesta pakāpe:</strong> {selectedPerson.dienesta_pakape}</p>
-//           <p><strong>Dienesta vienība:</strong> {selectedPerson.dienesta_vieniba}</p>
-//           <p><strong>Nometnes nodalījums:</strong> {selectedPerson.nometnes_nodalijums}</p>
-//           <p><strong>Aizbraucis uz PSRS:</strong> {selectedPerson.aizbraucis_uz_psrs ? 'Yes' : 'No'}</p>
-//           <p><strong>Miris:</strong> {selectedPerson.miris ? 'Yes' : 'No'}</p>
-//           <p><strong>Piezīmes:</strong> {selectedPerson.piezimes || 'None'}</p>
-//           <button onClick={() => setSelectedPerson(null)}>Close</button>
-//         </div>
-//       )}
-//     </div>
-//   );
-// }
-
-//////////////////////////////////////////////////////////////////////
-
-// import React, { useState, useEffect } from 'react';
-// import axios from 'axios';
-// import Dropdown from 'react-bootstrap/Dropdown';
-// import './styles.css';
-
-// export default function Home() {
-//   const [nameSearch, setNameSearch] = useState('');
-//   const [selectedDatabase, setSelectedDatabase] = useState('kritusie'); // Default to 'kritusie'
-//   const [people, setPeople] = useState([]);
-//   const [isSearching, setIsSearching] = useState(false);
-//   const [selectedDatabaseName, setSelectedDatabaseName] = useState('Kritušie un bez vēsts pazudušie leģionāri'); // Display name of the default database
-
-//   // Define the API endpoints for each database
-//   const databaseEndpoints = {
-//     brigade: 'http://localhost:8000/brigade/',
-//     zedelgema: 'http://127.0.0.1:8000/zedelgema/',
-//     mobilizetie: 'http://127.0.0.1:8000/mobilizetie/',
-//     kritusie: 'http://127.0.0.1:8000/kritusie/',
-//   };
-
-//   // Mapping of event keys to user-friendly names
-//   const databaseNames = {
-//     brigade: '2.brigādes apbalvotie',
-//     zedelgema: 'Zedelgemas karagūstekņu nometnē ieslodzītie',
-//     mobilizetie: 'Latviešu leģionā mobilizētie',
-//     kritusie: 'Kritušie un bez vēsts pazudušie leģionāri',
-//   };
-
-//   // Fetch data from the backend API using Axios
-//   const fetchPeople = async () => {
-//     try {
-//       console.log('Fetching data with:', nameSearch, selectedDatabase);
-  
-//       // Get the correct endpoint for the selected database
-//       const endpoint = databaseEndpoints[selectedDatabase] || databaseEndpoints.brigade;
-  
-//       // Trim and lower case the search input, then split by spaces
-//       const searchTerms = nameSearch.trim().toLowerCase().split(/\s+/);
-      
-//       // Generate multiple formats to search: "Jānis Lerhs" and "Lerhs Jānis"
-//       const reformattedQueries = [
-//         searchTerms.join(' '),                // Original input
-//         searchTerms.reverse().join(' ')       // Reversed input
-//       ];
-  
-//       // Fetch data from the backend for each query format
-//       let results = [];
-//       for (const query of reformattedQueries) {
-//         const response = await axios.get(endpoint, {
-//           params: { name: query },
-//         });
-//         results = results.concat(response.data);
-//       }
-  
-//       // Log to see if multiple formats return data
-//       console.log('API response:', results);
-  
-//       // Combine and filter results in the frontend
-//       const filteredPeople = results.filter((person) => {
-//         const combinedName = [
-//           person.vards_uzvards || '',
-//           person.vards || '',
-//           person.uzvards || '',
-//           person.uzvards_un_vards || ''
-//         ].join(' ').toLowerCase().trim();
-  
-//         const allTermsMatch = searchTerms.every((term) => combinedName.includes(term));
-//         return allTermsMatch;
-//       });
-  
-//       console.log('Filtered results:', filteredPeople);
-//       setPeople(filteredPeople);
-//       setIsSearching(true);
-//     } catch (error) {
-//       console.error('Error fetching data:', error);
-//       setPeople([]);
-//       setIsSearching(true);
-//     }
-//   };
-  
-  
-  
-  
-  
-
-//   // Handle search input changes
-//   const handleNameSearch = (event) => setNameSearch(event.target.value);
-
-//   // Handle database selection change
-//   const handleDatabaseSelect = (database) => {
-//     setSelectedDatabase(database);
-//     setSelectedDatabaseName(databaseNames[database] || 'Izvēlies datu bāzi');
-//   };
-
-//   // Fetch data whenever the search term or database changes
-//   useEffect(() => {
-//     // Fetch data when a valid nameSearch term is entered, or the selectedDatabase changes
-//     if (nameSearch.trim() !== '') {
-//       fetchPeople();
-//     } else {
-//       setPeople([]); // Clear results if nameSearch is empty
-//       setIsSearching(false); // Reset search attempt indicator
-//     }
-//   }, [nameSearch, selectedDatabase]); // Depend on both nameSearch and selectedDatabase
-
-//   return (
-//     <div className="search">
-//       <h2>Meklēšana</h2>
-
-//       <Dropdown onSelect={handleDatabaseSelect}>
-//         <Dropdown.Toggle id="dropdown-basic">
-//           {selectedDatabaseName} {/* Display the selected database name */}
-//         </Dropdown.Toggle>
-
-//         <Dropdown.Menu id="dropdown-basic-menu">
-//           <Dropdown.Item eventKey="mobilizetie">Latviešu leģionā mobilizētie</Dropdown.Item>
-//           <Dropdown.Item eventKey="zedelgema">Zedelgemas karagūstekņu nometnē ieslodzītie</Dropdown.Item>
-//           <Dropdown.Item eventKey="kritusie">Kritušie un bez vēsts pazudušie leģionāri</Dropdown.Item>
-//           <Dropdown.Item eventKey="brigade">2.brigādes apbalvotie</Dropdown.Item>
-//         </Dropdown.Menu>
-//       </Dropdown>
-
-//       {/* Search for Name */}
-//       <input
-//         type="text"
-//         id="nameSearch"
-//         value={nameSearch}
-//         onChange={handleNameSearch}
-//         placeholder="Meklēt pēc vārda un/vai uzvārda"
-//         title="Ieraksti vārdu un/vai uzvārdu"
-//       />
-
-//       {/* Display filtered results */}
-// <ul id="myUL">
-//   {people.length > 0 ? (
-//     people.map((person, index) => (
-//       <li key={index}>
-//         <span>{person.vards_uzvards} {person.uzvards} {person.vards} {person.uzvards_un_vards}</span><br /> {/* Updated to use 'vards_uzvards' */}
-//       </li>
-//     ))
-//   ) : (
-//     isSearching && <li>No results found</li>
-//   )}
-// </ul>
-
-//     </div>
-//   );
-// }
-
-////////////////////////////
-
-
-
-
-
-// import React, { useState, useEffect } from 'react';
-// import axios from 'axios';
-// import Dropdown from 'react-bootstrap/Dropdown';
-// import './styles.css';
-
-// export default function Home() {
-//   const [nameSearch, setNameSearch] = useState('');
-//   const [pakapeSearch, setPakapeSearch] = useState('');
-//   const [people, setPeople] = useState([]);
-//   const [isSearching, setIsSearching] = useState(false); // Tracks if a search was attempted
-
-//   // Fetch data from the backend API using Axios
-//   const fetchPeople = async () => {
-//     try {
-//       console.log('Fetching data with:', nameSearch, pakapeSearch);
-      
-//       // Add query parameters to the request URL
-//       const response = await axios.get(`http://localhost:8000/search/`, {
-//         params: {
-//           name: nameSearch,
-//           pakape: pakapeSearch,
-//         },
-//       });
-
-//       setPeople(response.data); // Set people state with response data
-//       setIsSearching(true); // Indicate that a search was attempted
-//     } catch (error) {
-//       console.error('Error fetching data:', error);
-//       setPeople([]); // Clear people on error
-//       setIsSearching(true);
-//     }
-//   };
-
-//   // Handle search input changes
-//   const handleNameSearch = (event) => setNameSearch(event.target.value);
-//   const handlePakapeSearch = (event) => setPakapeSearch(event.target.value);
-
-//   // Fetch data whenever the search term changes
-//   useEffect(() => {
-//     if (nameSearch || pakapeSearch) {
-//       fetchPeople();
-//     } else {
-//       setPeople([]); // Clear results if no search terms
-//       setIsSearching(false); // Reset search attempt indicator
-//     }
-//   }, [nameSearch, pakapeSearch]);
-
-//   return (
-//     <div className="search">
-//       <h2>Meklēšana</h2>
-
-//       <Dropdown>
-//       <Dropdown.Toggle id="dropdown-basic">
-//         Izvēlies datu bāzi, kurā meklēt
-//       </Dropdown.Toggle>
-
-//       <Dropdown.Menu id="dropdown-basic-menu">
-//         <Dropdown.Item href="#/action-1">VISĀS</Dropdown.Item>
-//         <Dropdown.Item href="#/action-1">Latviešu leģionā mobilizētie</Dropdown.Item>
-//         <Dropdown.Item href="#/action-2">Zedelgemas karagūstekņu nometnē ieslodzītie</Dropdown.Item>
-//         <Dropdown.Item href="#/action-3">Kritušo un bez vēsts pazudušo leģionāri</Dropdown.Item>
-//         <Dropdown.Item href="#/action-3">2.brigādes apbalvotie</Dropdown.Item>
-//       </Dropdown.Menu>
-//     </Dropdown>
-
-
-//       {/* Search for Name and Surname (Combined) */}
-//       <input
-//         type="text"
-//         id="nameSearch"
-//         value={nameSearch}
-//         onChange={handleNameSearch}
-//         placeholder="Meklēt pēc vārda un/vai uzvārda"
-//         title="Ieraksti vārdu un/vai uzvārdu"
-//       />
-
-//       {/* Search for Pakape (Rank/Position) */}
-//       <input
-//         type="text"
-//         id="pakapeSearch"
-//         value={pakapeSearch}
-//         onChange={handlePakapeSearch}
-//         placeholder="Meklēt pēc pakapes"
-//         title="Ieraksti pakapi"
-//       />
-
-//       {/* Display filtered results */}
-//       <ul id="myUL">
-//         {people.length > 0 ? (
-//           people.map((person, index) => (
-//             <li key={index}>
-//               <span>{person.uzvards_un_vards} - {person.pakape}</span>
-//             </li>
-//           ))
-//         ) : (
-//           isSearching && <li>No results found</li>
-//         )}
-//       </ul>
-//     </div>
-//   );
-// }

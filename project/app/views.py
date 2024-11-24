@@ -1,4 +1,6 @@
 # Make sure you have a serializer for user
+from .models import Brigade, Kritusie
+from rest_framework.decorators import api_view, permission_classes
 from django.contrib.auth import authenticate
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
@@ -334,3 +336,37 @@ class ChangePasswordView(APIView):
 #     if username and User.objects.filter(username=username).exists():
 #         return JsonResponse({'exists': True})
 #     return JsonResponse({'exists': False})
+
+
+# @api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+# def search_brigade(request):
+#     user = request.user
+#     query = request.query_params.get('name', '')
+
+#     # Filter based on user type
+#     if user.is_staff:
+#         results = Brigade.objects.filter(dienesta_vieniba__icontains=query)
+#     else:
+#         # Prevent normal users from accessing these fields
+#         results = Brigade.objects.none()
+
+#     serializer = BrigadeSerializer(results, many=True)
+#     return Response(serializer.data)
+
+
+# @api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+# def search_kritusie(request):
+#     user = request.user
+#     query = request.query_params.get('name', '')
+
+#     # Filter based on user type
+#     if user.is_staff:
+#         results = Kritusie.objects.filter(vieniba__icontains=query)
+#     else:
+#         # Prevent normal users from accessing these fields
+#         results = Kritusie.objects.none()
+
+#     serializer = KritusieSerializer(results, many=True)
+#     return Response(serializer.data)

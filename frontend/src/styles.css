@@ -121,7 +121,7 @@
 }
 
 .search {
-  max-width: 600px; /* Ensure the container is not too narrow */
+  width: 60%; /* Ensure the container is not too narrow */
   margin: 0 auto; /* Center the container */
   padding: 20px;  /* Add padding to the container */
 }
