@@ -84,6 +84,7 @@
 
 #myUL {
   list-style-type: none;
+  text-align: left;
   padding: 0;
   margin: 0;
 }
@@ -97,7 +98,7 @@
   font-size: 18px;
   color: black;
   display: block;
-  border-radius: 15px;
+  border-radius: 8px;
   margin-bottom: 5px;
 }
 
