@@ -498,8 +498,110 @@ const [dienestaVieniba, setDienestaVieniba] = useState('');
 
   const isBirthdateSearchEnabled = selectedDatabase === 'mobilizetie' || selectedDatabase === 'zedelgema';
 
+  // const fetchPeople = async () => {
+  //   try {
+  //     const endpoint = databaseEndpoints[selectedDatabase] || databaseEndpoints.brigade;
+  //     const searchTerms = nameSearch.trim().toLowerCase().split(/\s+/);
+  
+  //     const reformattedQueries = [
+  //       searchTerms.join(' '),
+  //       searchTerms.reverse().join(' '),
+  //     ];
+  
+  //     let params = { name: reformattedQueries[0] };
+  //     if (isBirthdateSearchEnabled && birthdateSearch.trim() !== '') {
+  //       params.dzimsanas_datums = birthdateSearch.trim();
+  //     }
+  
+  //     // Include dienesta vieniba or vieniba search based on selected database
+  //     if (selectedDatabase === 'brigade' && dienestaVienibaSearch.trim() !== '') {
+  //       params.dienesta_vieniba = dienestaVienibaSearch.trim();
+  //     } else if (selectedDatabase === 'kritusie' && vienibaSearch.trim() !== '') {
+  //       params.vieniba = vienibaSearch.trim();
+  //     } else if (selectedDatabase === 'zedelgema' && dienestaVienibaSearch.trim() !== '') {
+  //       params.dienesta_vieniba = dienestaVienibaSearch.trim();
+  //     }
+  
+  //     let results = [];
+  //     for (const query of reformattedQueries) {
+  //       params.name = query;
+  //       const response = await axios.get(endpoint, { params });
+  //       results = results.concat(response.data);
+  //     }
+  
+  //     // Filter out duplicates based on a unique key
+  //     const uniquePeople = new Map();
+  //     results.forEach((person) => {
+  //       const uniqueKey = `${person.uzvards_un_vards || person.vards_uzvards || person.uzvards || ''}-${person.vards || ''}`;
+  //       uniquePeople.set(uniqueKey, person);
+  //     });
+  
+  //     const filteredPeople = Array.from(uniquePeople.values()).filter((person) => {
+  //       const combinedName = [
+  //         person.vards_uzvards || '',
+  //         person.vards || '',
+  //         person.uzvards || '',
+  //         person.uzvards_un_vards || ''
+  //       ].join(' ').toLowerCase().trim();
+  
+  //       const allTermsMatch = searchTerms.every((term) => combinedName.includes(term));
+  
+  //       const birthdateMatch = !isBirthdateSearchEnabled || 
+  //         (birthdateSearch.trim() === '' || 
+  //         person.dzimsanas_datums.includes(birthdateSearch.trim())); // Allows partial date match
+  
+  //       // Check for dienesta vieniba or vieniba match
+  //       const dienestaMatch = selectedDatabase === 'brigade' || 'zedelgema' ? 
+  //         (person.dienesta_vieniba || '').toLowerCase().includes(dienestaVienibaSearch.toLowerCase()) : true;
+  //       const vienibaMatch = selectedDatabase === 'kritusie' ? 
+  //         (person.vieniba || '').toLowerCase().includes(vienibaSearch.toLowerCase()) : true;
+
+  //       return allTermsMatch && birthdateMatch && dienestaMatch && vienibaMatch;
+  //     });
+  
+  //     // Sort filteredPeople by surname, then by first name
+  //     const sortedPeople = filteredPeople.sort((a, b) => {
+  //       const surnameA = (a.uzvards || a.vards_uzvards || a.uzvards_un_vards || '').toLowerCase();
+  //       const surnameB = (b.uzvards || b.vards_uzvards || b.uzvards_un_vards || '').toLowerCase();
+  //       if (surnameA < surnameB) return -1;
+  //       if (surnameA > surnameB) return 1;
+  
+  //       const firstNameA = (a.vards || '').toLowerCase();
+  //       const firstNameB = (b.vards || '').toLowerCase();
+  //       if (firstNameA < firstNameB) return -1;
+  //       if (firstNameA > firstNameB) return 1;
+  
+  //       return 0;
+  //     });
+  
+  //     setPeople(sortedPeople);
+  //     setIsSearching(true);
+  //   } catch (error) {
+  //     console.error('Error fetching data:', error);
+  //     setPeople([]);
+  //     setIsSearching(true);
+  //   }
+  // };
+  
   const fetchPeople = async () => {
     try {
+      if (nameSearch.trim().length < 3) {
+        setPeople([]); // Clear results
+        setIsSearching(false); // Indicate no active search
+        return;
+      }
+      // Ensure at least one search field has input
+      if (
+        !nameSearch.trim() &&
+        !birthdateSearch.trim() &&
+        !dienestaVienibaSearch.trim() &&
+        !vienibaSearch.trim()
+      ) {
+        setPeople([]); // Clear results
+        setIsSearching(false); // Indicate no active search
+        return;
+      }
+  
       const endpoint = databaseEndpoints[selectedDatabase] || databaseEndpoints.brigade;
       const searchTerms = nameSearch.trim().toLowerCase().split(/\s+/);
   
@@ -513,7 +615,6 @@ const [dienestaVieniba, setDienestaVieniba] = useState('');
         params.dzimsanas_datums = birthdateSearch.trim();
       }
   
-      // Include dienesta vieniba or vieniba search based on selected database
       if (selectedDatabase === 'brigade' && dienestaVienibaSearch.trim() !== '') {
         params.dienesta_vieniba = dienestaVienibaSearch.trim();
       } else if (selectedDatabase === 'kritusie' && vienibaSearch.trim() !== '') {
@@ -529,7 +630,6 @@ const [dienestaVieniba, setDienestaVieniba] = useState('');
         results = results.concat(response.data);
       }
   
-      // Filter out duplicates based on a unique key
       const uniquePeople = new Map();
       results.forEach((person) => {
         const uniqueKey = `${person.uzvards_un_vards || person.vards_uzvards || person.uzvards || ''}-${person.vards || ''}`;
@@ -548,21 +648,19 @@ const [dienestaVieniba, setDienestaVieniba] = useState('');
   
         const birthdateMatch = !isBirthdateSearchEnabled || 
           (birthdateSearch.trim() === '' || 
-          person.dzimsanas_datums.includes(birthdateSearch.trim())); // Allows partial date match
+          person.dzimsanas_datums.includes(birthdateSearch.trim()));
   
-        // Check for dienesta vieniba or vieniba match
         const dienestaMatch = selectedDatabase === 'brigade' || 'zedelgema' ? 
           (person.dienesta_vieniba || '').toLowerCase().includes(dienestaVienibaSearch.toLowerCase()) : true;
         const vienibaMatch = selectedDatabase === 'kritusie' ? 
           (person.vieniba || '').toLowerCase().includes(vienibaSearch.toLowerCase()) : true;
-
+  
         return allTermsMatch && birthdateMatch && dienestaMatch && vienibaMatch;
       });
   
-      // Sort filteredPeople by surname, then by first name
       const sortedPeople = filteredPeople.sort((a, b) => {
         const surnameA = (a.uzvards || a.vards_uzvards || a.uzvards_un_vards || '').toLowerCase();
-        const surnameB = (b.uzvards || b.vards_uzvards || b.uzvards_un_vards || '').toLowerCase();
+        const surnameB = (b.uzvards || a.vards_uzvards || a.uzvards_un_vards || '').toLowerCase();
         if (surnameA < surnameB) return -1;
         if (surnameA > surnameB) return 1;
   
@@ -581,7 +679,8 @@ const [dienestaVieniba, setDienestaVieniba] = useState('');
       setPeople([]);
       setIsSearching(true);
     }
-  };  
+  };
+  
 
   useEffect(() => {
     const handleScroll = () => {
@@ -624,7 +723,7 @@ const [dienestaVieniba, setDienestaVieniba] = useState('');
   //   }
   //   // eslint-disable-next-line
   // }, [nameSearch, birthdateSearch, dienestaVienibaSearch, vienibaSearch, selectedDatabase]);
-
+  
 
   return (
     <div className="search">
@@ -650,7 +749,7 @@ const [dienestaVieniba, setDienestaVieniba] = useState('');
         value={nameSearch}
         onChange={handleNameSearch}
         placeholder="Meklēt pēc vārda un/vai uzvārda"
-        title="Ieraksti vārdu un/vārdu"
+        title="Ierakstiet vismaz 3 simbolus, lai meklētu pēc vārda un/vārda"
       />
 
 
@@ -706,8 +805,8 @@ const [dienestaVieniba, setDienestaVieniba] = useState('');
       </Button>
       <br></br>
 
-      {loading && <p>Ielādē...</p>}
-      {!loading && <p>Atrastie rezultāti: {people.length}</p>}
+      {/* {loading && <p>Ielādē...</p>}
+      {!loading && <p>Atrastie rezultāti: {people.length}</p>} */}
 
       <div>
         {people.map((person, index) => (
@@ -715,12 +814,17 @@ const [dienestaVieniba, setDienestaVieniba] = useState('');
         ))}
       </div>  
 
-
-
-
-      {isSearching && people.length === 0 && (
+      {/* {isSearching && people.length === 0 && (
         <p>No results found for "{nameSearch}".</p>
-      )}
+      )} */}
+      <div>
+  {!isSearching ? (
+    <p>Sāciet meklēšanu...</p>
+  ) : (
+    <p>Atrastie rezultāti: {people.length}</p>
+  )}
+</div>
+
       {isSearching && people.length > 0 && (
         <ul id="myUL">
           {people.map((person, index) => (
