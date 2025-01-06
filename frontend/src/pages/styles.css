@@ -1,6 +1,6 @@
 /* Set the width of the dropdown button */
 #dropdown-basic {
-  width: 100%; /* Adjust the width as desired */
+  width: 100%; 
   margin: 0 auto;
   padding: 10px;
   margin-bottom: 10px;
@@ -10,9 +10,8 @@
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
 }
 
-/* Ensure dropdown menu spans full width of the button */
 #dropdown-basic-menu {
-  width: 100%; /* Ensure dropdown menu matches button width */
+  width: 100%; 
   border-radius: 15px;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
 }
@@ -23,19 +22,18 @@
 }
 
 .mb-3 {
-  width: 500px; /* Adjust the width as desired */
+  width: 500px; 
   margin: 0 auto;
   padding: 10px;
 }
 
-/* styles.css */
 .dropdown-item:hover {
   background-color: #e1dddd;
   cursor: pointer;
 }
 
 .card-overlay {
-  position: fixed; /* Ensures the card is always on top */
+  position: fixed; 
   top: 0;
   left: 0;
   width: 100%;
@@ -43,8 +41,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
-  z-index: 1000; /* High z-index to be above other content */
+  background: rgba(0, 0, 0, 0.5); 
+  z-index: 1000; 
 }
 
 .card {
@@ -81,7 +79,7 @@
 }
 
 .sticky-top {
-  z-index: 1030; /* Make sure it's above other elements if needed */
+  z-index: 1030; 
 }
 
 
@@ -102,5 +100,9 @@
 
 .back-to-top:hover {
   background-color: #000000;
+}
+
+.inputError {
+  border: 1px solid red;
 }
 

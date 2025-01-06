@@ -11,25 +11,21 @@ function Info() {
         <section className="mb-4 text-start">
           <h4>Par datubāzi</h4>
           <p className="text-muted">
-            Datubāze "Latviešu karavīri" piedāvā iespēju piekļūt informācijai par latviešu karavīriem. Šeit var atrast informāciju par karavīru vēsturi, viņu dalību dažādos militārajos notikumos, un daudz ko citu. Datubāze ir izveidota, lai atvieglotu piekļuvi šiem vēsturiskajiem datiem, un ir piemērota gan pētniekiem, gan interesentiem.
+          Datubāze "Latviešu karavīri" piedāvā iespēju piekļūt informācijai par latviešu karavīriem. Šeit var atrast informāciju par karavīru vēsturi, viņu dalību dažādos militārajos notikumos, un daudz ko citu. Datubāze ir izveidota, lai atvieglotu piekļuvi  vēsturiskajiem datiem, un ir piemērota gan pētniekiem, gan interesentiem.
           </p>
         </section>
         <hr />
         {/* FAQ Section */}
         <section className="mb-4 text-start">
-          <h4>BUJ (Biežāk Uzdotie Jautājumi)</h4>
+          <h4>Biežāk Uzdotie Jautājumi</h4>
           <ul className="list-unstyled text-muted">
             <li className="mb-2">
-              <strong>Kā reģistrēties?</strong><br />
-              Lai reģistrētos, nospiediet pogu "Reģistrēties" un aizpildiet nepieciešamo informāciju.
-            </li>
-            <li className="mb-2">
               <strong>Kā veikt meklēšanu?</strong><br />
-              Pēc pieteikšanās izmantojiet meklēšanas iespēju, lai atrastu informāciju par karavīriem.
+              Pēc pieteikšanās dodieties uz sadaļu “Meklēšana”, izvēlieties tabulu, kurā vēlaties meklēt, un ievadiet datus par karavīru, kura informāciju vēlaties apskatīt.
             </li>
             <li>
               <strong>Ko darīt, ja aizmirstu paroli?</strong><br />
-              Ja aizmirstat paroli, lūdzu, sazinieties ar mums, izmantojot norādīto e-pasta adresi.
+              Ja aizmirstat paroli, lūdzu, sazinieties ar mums, izmantojot norādīto e-pasta adresi. Mēs nosūtīsim jums jaunu paroli, kura būs jāmaina pēc pirmās pieteikšanās.
             </li>
           </ul>
         </section>
@@ -45,7 +41,7 @@ function Info() {
             E-pasts saziņai: <a href="mailto:datubaze@karamuzejs.lv" className="text-decoration-none">datubaze@karamuzejs.lv</a>
           </p>
           <p className="text-muted text-start">
-            Atbildes uz e-pastiem tiek sniegtas darba dienās, darba laikā. Jautājumiem par datu bāzes saturu atbildēs Vēstures departaments, savukārt par tehniskām problēmām, ja nepieciešams, varēs palīdzēt IT Atbalsta komanda.
+            Atbildes uz e-pastiem tiek sniegtas darba dienās, darba laikā. Jautājumiem par datu bāzes saturu atbildēs Vēstures departaments, savukārt par tehniskām problēmām, ja nepieciešams, varēs palīdzēt IT atbalsta komanda.
           </p>
         </section>
       </Card>

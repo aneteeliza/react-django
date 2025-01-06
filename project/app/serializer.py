@@ -10,37 +10,6 @@ from rest_framework.validators import UniqueValidator
 AppUser = get_user_model()
 
 
-# class UserRegisterSerializer(serializers.ModelSerializer):
-#     confirm_password = serializers.CharField(write_only=True)
-
-#     class Meta:
-#         model = UserModel
-#         fields = ['email', 'password',
-#                   'confirm_password', 'first_name', 'last_name']
-
-#     def validate(self, data):
-#         # Logging the data to check what is being passed
-#         print("Received data:", data)
-
-#         if data['password'] != data['confirm_password']:
-#             raise serializers.ValidationError(
-#                 {"password": "Paroles nesakrīt!"})  # "Passwords do not match!"
-#         return data
-
-#     def create(self, validated_data):
-#         # Remove confirm_password before creating the user
-#         validated_data.pop('confirm_password')
-
-#         user_obj = UserModel.objects.create_user(
-#             email=validated_data['email'],
-#             password=validated_data['password']
-#         )
-#         user_obj.first_name = validated_data['first_name']
-#         user_obj.last_name = validated_data['last_name']
-#         user_obj.save()
-#         return user_obj
-
-
 class UserRegisterSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(write_only=True)
 
@@ -104,7 +73,10 @@ class BrigadeSerializer(serializers.ModelSerializer):
 class MobilizetieSerializer(serializers.ModelSerializer):
     class Meta:
         model = Mobilizetie
-        fields = ['uzvards', 'vards', 'dzimsanas_datums']
+        fields = ['uzvards', 'vards', 'dzimsanas_datums', 'dzimsanas_vieta', 'pedeja_dzives_vieta', 'mobilizesanas_datums_labots',
+                  'pirmā_dienesta_vieniba_labots', 'pirmā_dienesta_pakāpe', 'kritis_datums', 'info_par_krisanu', 'pazudis_datums',
+                  'info_par_pazusanu', 'miris_datums', 'info_par_mirsanu',  'dezertējis_datums', 'apbalvots', 'paaugstinats_degradets',
+                  'atbrīvots_no_dienesta_datums', 'atbrivosanas_iemesls', 'ievainots', 'navessods_arests', 'cita_informacija']
 
 
 class ZedelgemaSerializer(serializers.ModelSerializer):
@@ -133,7 +105,6 @@ class ChangePasswordSerializer(serializers.Serializer):
         return value
 
     def validate_new_password(self, value):
-        # Custom validation for the new password
         if len(value) < 8:
             raise serializers.ValidationError(
                 'The password must be at least 8 characters long.')

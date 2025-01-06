@@ -43,7 +43,7 @@ function App() {
 
   function validateFields() {
     if (!email || !password || (registrationToggle && (!firstName || !lastName))) {
-      setErrorMessage('Visi lauki ir jāaizpilda!'); // "All fields are required!"
+      setErrorMessage('Visi lauki ir jāaizpilda!'); 
       return false;
     }
     setErrorMessage('');
@@ -62,34 +62,9 @@ function App() {
       })
       .catch(error => {
         console.error('Login error:', error);
-        setErrorMessage('Pietikšanās neizdevās. Pārbaudiet e-pastu un/vai paroli.');
+        setErrorMessage('Pietikšanās neizdevās. Pārbaudiet e-pastu un paroli.');
       });
   }
-
-  // function submitRegistration(e) {
-  //   e.preventDefault();
-  //   if (!validateFields()) return;
-
-  //   client.post("/register", { 
-  //     email, 
-  //     password, 
-  //     confirm_password: confirmPassword, 
-  //     first_name: firstName, 
-  //     last_name: lastName 
-  //   })    
-  //     .then(() => {
-  //       client.post("/login", { email, password })
-  //         .then(() => {
-  //           localStorage.setItem('currentUser', 'true');
-  //           setCurrentUser(true);
-  //           navigate('/');
-  //         });
-  //     })
-  //     .catch(error => {
-  //       console.error('Kļūda reģistrācijā:', error.response ? error.response.data : error);
-  //       setErrorMessage('Reģistrācija neizdevās. Mēģiniet vēlreiz.');
-  //     });      
-  // }
 
   function submitRegistration(e) {
     e.preventDefault();
@@ -151,6 +126,7 @@ function App() {
         setPassword('');
         setFirstName('');
         setLastName('');
+        setConfirmPassword('');
         navigate('/login');
       })
       .catch(error => {
@@ -160,7 +136,6 @@ function App() {
 
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  // Update validation logic
   function validateFields() {
     if (!email || !password || (registrationToggle && (!firstName || !lastName || !confirmPassword))) {
       setErrorMessage('Visi lauki ir jāaizpilda!'); // "All fields are required!"
@@ -173,6 +148,16 @@ function App() {
     setErrorMessage('');
     return true;
   }
+
+
+  const [error, setError] = useState("");
+  const validateEmail = () => {
+    if (!email.includes("@")) {
+      setError("Lūdzu, iekļaujiet „@” e-pasta adresē. „" + email + "” nav derīga e-pasta adrese.");
+    } else {
+      setError(""); // Clear the error if email is valid
+    }
+  };
 
   return (
     <div className="bg-light min-vh-100 d-flex flex-column">
@@ -220,10 +205,22 @@ function App() {
               <h4 className="text-center mb-4">{registrationToggle ? 'Reģistrēties' : 'Pieteikties'}</h4>
               <Form onSubmit={registrationToggle ? submitRegistration : submitLogin}>
                 {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
-                <Form.Group className="mb-3 w-100">
+                {/* <Form.Group className="mb-3 w-100">
                   <Form.Label>E-pasta adrese</Form.Label>
                   <Form.Control type="email" placeholder="Ievadiet e-pasta adresi" value={email} onChange={e => setEmail(e.target.value)} className="rounded-pill" />
-                </Form.Group>
+                </Form.Group> */}
+                <Form.Group className="mb-3 w-100">
+      <Form.Label>E-pasta adrese</Form.Label>
+      <Form.Control
+        type="email"
+        placeholder="Ievadiet e-pasta adresi"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        onBlur={validateEmail} 
+        className={`rounded-pill ${error ? "is-invalid" : ""}`} 
+      />
+      {error && <div className="invalid-feedback">{error}</div>}
+    </Form.Group>
                 {registrationToggle && (
                   <>
                     <Form.Group className="mb-3 w-100">
@@ -273,7 +270,7 @@ function App() {
         </Routes>
       </Container>
       <footer className="footer">
-        <p>&copy; 2024 Latviešu Kara muzejs. Visas tiesības aizsargātas.</p>
+        <p>&copy; 2024 Latvijas Kara muzejs.</p>
       </footer>
     </div>
   );

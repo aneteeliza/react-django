@@ -22,7 +22,7 @@ class AppUserManager(BaseUserManager):
             raise ValueError('A password is required.')
         user = self.create_user(email, password)
         user.is_superuser = True
-        user.is_staff = True  # Make sure this field is set to True
+        user.is_staff = True
         user.save()
         return user
 
@@ -32,8 +32,8 @@ class AppUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(max_length=50, unique=True)
     first_name = models.CharField(max_length=50, default="Vārds")
     last_name = models.CharField(max_length=50, default="Uzvārds")
-    is_staff = models.BooleanField(default=False)  # Add this field
-    is_active = models.BooleanField(default=True)  # Add this field
+    is_staff = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
 
     USERNAME_FIELD = 'email'
 
@@ -90,7 +90,6 @@ class Zedelgema(models.Model):
     dienesta_pakape = models.CharField(max_length=50)
     uzvards = models.CharField(max_length=50)
     vards = models.CharField(max_length=50)
-    # dzimsanas_datums = models.DateField(null=True, blank=True)
     dzimsanas_datums = models.CharField(max_length=20, null=True, blank=True)
     dienesta_vieniba = models.TextField()
     nometnes_nodalijums = models.IntegerField()
@@ -125,58 +124,54 @@ class Kritusie(models.Model):
 class Mobilizetie(models.Model):
     id = models.CharField(max_length=50, primary_key=True)
     uzvards = models.CharField(
-        max_length=500, null=True, blank=True)  # Last name
+        max_length=500, null=True, blank=True)
     vards = models.CharField(max_length=100, null=True,
-                             blank=True)  # First name
+                             blank=True)
     pirmā_dienesta_pakāpe = models.CharField(
-        max_length=100, null=True, blank=True)  # Initial rank
-    dzimsanas_datums = models.DateField(null=True, blank=True)  # Birth date
+        max_length=100, null=True, blank=True)
+    dzimsanas_datums = models.DateField(null=True, blank=True)
     dzimsanas_vieta = models.CharField(
-        max_length=255, null=True, blank=True)  # Birthplace
+        max_length=255, null=True, blank=True)
     kritis_datums = models.CharField(
-        max_length=50, null=True, blank=True)  # Date of death (killed)
+        max_length=50, null=True, blank=True)
     info_par_krisanu = models.TextField(
-        null=True, blank=True)  # Information about death
+        null=True, blank=True)
     pazudis_datums = models.CharField(
-        max_length=50, null=True, blank=True)  # Date of disappearance
+        max_length=50, null=True, blank=True)
     info_par_pazusanu = models.TextField(
-        null=True, blank=True)  # Information about disappearance
-    # Date of death (died naturally)
+        null=True, blank=True)
     miris_datums = models.CharField(
         max_length=50, null=True, blank=True)
-    # Information about natural death
     info_par_mirsanu = models.TextField(null=True, blank=True)
     kritis_gusta_datums = models.CharField(
-        max_length=50, null=True, blank=True)  # Date captured
+        max_length=50, null=True, blank=True)
     cits_naves_iemesls_datums = models.CharField(
-        max_length=50, null=True, blank=True)  # Date of other death reason
-    # Cause of death or reason
+        max_length=50, null=True, blank=True)
     iemesls = models.TextField(null=True, blank=True)
     mobilizesanas_datums_labots = models.CharField(
-        max_length=255, null=True, blank=True)  # Mobilization date (modified)
+        max_length=255, null=True, blank=True)
     pedeja_dzives_vieta = models.CharField(
-        max_length=255, null=True, blank=True)  # Last residence
+        max_length=255, null=True, blank=True)
     pirmā_dienesta_vieniba_labots = models.CharField(
-        # Initial service unit (modified)
         max_length=255, null=True, blank=True)
     nosutits_uz_citu_vienibu_kursiem = models.CharField(
-        max_length=255, null=True, blank=True)  # Sent to another unit or training
+        max_length=255, null=True, blank=True)
     aizbraucis_uz_lpsr = models.CharField(
-        max_length=50, null=True, blank=True)  # Left for LPSR (Boolean)
+        max_length=50, null=True, blank=True)
     paaugstinats_degradets = models.CharField(
-        max_length=255, null=True, blank=True)  # Promoted or degraded
+        max_length=255, null=True, blank=True)
     dezertējis_datums = models.CharField(
-        max_length=50, null=True, blank=True)  # Date of desertion
+        max_length=50, null=True, blank=True)
     atbrīvots_no_dienesta_datums = models.CharField(
-        max_length=50, null=True, blank=True)  # Date released from service
+        max_length=50, null=True, blank=True)
     atbrivosanas_iemesls = models.CharField(
-        max_length=255, null=True, blank=True)  # Reason for release
-    ievainots = models.TextField(null=True, blank=True)  # Injuries
+        max_length=255, null=True, blank=True)
+    ievainots = models.TextField(null=True, blank=True)
     navessods_arests = models.CharField(
-        max_length=255, null=True, blank=True)  # Death penalty or arrest
-    apbalvots = models.TextField(null=True, blank=True)  # Awards
+        max_length=255, null=True, blank=True)
+    apbalvots = models.TextField(null=True, blank=True)
     cita_informacija = models.TextField(
-        null=True, blank=True)  # Other information
+        null=True, blank=True)
 
     def __str__(self):
         return f"{self.uzvards}, {self.vards} ({self.pirmā_dienesta_pakāpe})"

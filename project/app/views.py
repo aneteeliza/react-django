@@ -1,4 +1,3 @@
-# Make sure you have a serializer for user
 from .models import Brigade, Kritusie
 from rest_framework.decorators import api_view, permission_classes
 from django.contrib.auth import authenticate
@@ -39,7 +38,7 @@ from django.middleware.csrf import get_token
 
 
 class BrigadeView(APIView):
-    permission_classes = [AllowAny]  # Allow unauthenticated access
+    permission_classes = [AllowAny]
 
     def get(self, request):
         name = request.GET.get('name', '')
@@ -63,7 +62,7 @@ class BrigadeView(APIView):
 
 
 class MobilizetieView(APIView):
-    permission_classes = [AllowAny]  # Allow unauthenticated access
+    permission_classes = [AllowAny]
 
     def get(self, request):
         vards = request.GET.get('vards', '')
@@ -92,7 +91,7 @@ class MobilizetieView(APIView):
 
 
 class ZedelgemaView(APIView):
-    permission_classes = [AllowAny]  # Allow unauthenticated access
+    permission_classes = [AllowAny]
 
     def get(self, request):
         vards = request.GET.get('vards', '')
@@ -121,7 +120,7 @@ class ZedelgemaView(APIView):
 
 
 class KritusieView(APIView):
-    permission_classes = [AllowAny]  # Allow unauthenticated access
+    permission_classes = [AllowAny]
 
     def get(self, request):
         vards_uzvards = request.GET.get('vards_uzvards', '')
@@ -139,22 +138,30 @@ class KritusieView(APIView):
             serializer.save()
             return Response(serializer.data)
 
-
-# class UserRegister(APIView):
-#     permission_classes = (permissions.AllowAny,)
+# class KritusieView(APIView):
+#     permission_classes = [AllowAny]  # Allow unauthenticated access
 
 #     def get(self, request):
-#         return Response({"detail": "Method not allowed"}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+#         vards_uzvards = request.GET.get('vards_uzvards', '')
+#         queryset = Kritusie.objects.all()
+
+#         # Normalize the query input
+#         if vards_uzvards:
+#             normalized_query = vards_uzvards.lower()
+#             queryset = [
+#                 entry for entry in queryset if fuzz.partial_ratio(
+#                     normalized_query, entry.vards_uzvards.lower()) > 60
+#             ]
+
+#         serializer = KritusieSerializer(queryset, many=True)
+#         return Response(serializer.data)
 
 #     def post(self, request):
-#         # try:
-#         clean_data = custom_validation(request.data)
-#         serializer = UserRegisterSerializer(data=clean_data)
+#         serializer = KritusieSerializer(data=request.data)
 #         if serializer.is_valid(raise_exception=True):
-#             user = serializer.create(clean_data)
-#             if user:
-#                 return Response(serializer.data, status=status.HTTP_201_CREATED)
-#         return Response(status=status.HTTP_400_BAD_REQUEST)
+#             serializer.save()
+#             return Response(serializer.data)
+
 
 class UserRegister(APIView):
     permission_classes = (permissions.AllowAny,)
@@ -208,24 +215,6 @@ class UserLogout(APIView):
         return Response(status=status.HTTP_200_OK)
 
 
-# class UserView(APIView):
-#     permission_classes = [IsAuthenticated]
-
-#     def get(self, request):
-#         user = request.user
-#         serializer = UserSerializer(user)
-#         return Response({"user": serializer.data})
-
-#     def put(self, request):
-#         user = request.user
-#         user.email = request.data.get("email", user.email)
-#         user.first_name = request.data.get("first_name", user.first_name)
-#         user.last_name = request.data.get("last_name", user.last_name)
-#         user.save()
-
-#         # Returning success response
-#         return Response({"message": "Profile updated successfully"}, status=status.HTTP_200_OK)
-
 class UserView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -241,12 +230,11 @@ class UserView(APIView):
         user.last_name = request.data.get("last_name", user.last_name)
         user.save()
 
-        # Returning success response
         return Response({"message": "Profile updated successfully"}, status=status.HTTP_200_OK)
 
     def delete(self, request):
         user = request.user
-        user.delete()  # Delete the user
+        user.delete()
         return Response({"message": "Account deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
 
 
@@ -260,13 +248,11 @@ class UserProfileView(APIView):
 
     def put(self, request):
         user = request.user
-        # If the request body contains new values for fields, we update the user
         user.email = request.data.get("email", user.email)
         user.first_name = request.data.get("first_name", user.first_name)
         user.last_name = request.data.get("last_name", user.last_name)
         user.save()
 
-        # Returning success response
         return Response({"message": "Profile updated successfully"}, status=status.HTTP_200_OK)
 
 
@@ -278,7 +264,7 @@ def profile_view(request):
 
 
 def unified_search_view(request):
-    # Example fetching data from different endpoints
+    # fetching data from different endpoints
     kritusie_data = requests.get('http://127.0.0.1:8000/kritusie/').json()
     brigade_data = requests.get('http://127.0.0.1:8000/brigade/').json()
     mobilizetie_data = requests.get(
@@ -316,6 +302,5 @@ class UserDelete(APIView):
 
     def delete(self, request):
         user = request.user
-        # Optionally, perform any additional checks before deleting (e.g., logging, notifications, etc.)
-        user.delete()  # This will delete the user account
+        user.delete()
         return Response({"message": "Account deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
