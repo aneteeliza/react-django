@@ -20,11 +20,7 @@ from app.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', BrigadeView.as_view(), name="anything"),
-    path('brigade/', BrigadeView.as_view(), name='brigade'),
-    path('mobilizetie/', MobilizetieView.as_view(), name='mobilizetie'),
-    path('zedelgema/', ZedelgemaView.as_view(), name='zedelgema'),
-    path('kritusie/', KritusieView.as_view(), name='kritusie'),
+    path('search', SearchView.as_view(), name="anything"),
     path('register', UserRegister.as_view(), name='register'),
     path('login', UserLogin.as_view(), name='login'),
     path('logout', UserLogout.as_view(), name='logout'),

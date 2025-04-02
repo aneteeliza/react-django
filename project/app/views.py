@@ -1,4 +1,4 @@
-from .models import Brigade, Kritusie
+from .models import Brigade, Mobilised
 from rest_framework.decorators import api_view, permission_classes
 from django.contrib.auth import authenticate
 from django.contrib.auth import update_session_auth_hash
@@ -37,130 +37,54 @@ from django.views.decorators.csrf import csrf_exempt
 from django.middleware.csrf import get_token
 
 
-class BrigadeView(APIView):
+class SearchView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
         name = request.GET.get('name', '')
-        pakape = request.GET.get('pakape', '')
-        queryset = Brigade.objects.all()
+        surname = request.GET.get('surname', '')
+        birthyear = request.GET.get('birthyear', '')
+        rank = request.GET.get('rank', '')
+        table = int(request.GET.get('table', 0))
 
-        if name:
-            queryset = queryset.filter(uzvards_un_vards__icontains=name)
+        match table:
+            case 2:
+                queryset = Fallen.objects.all()
+                if name:
+                    queryset = queryset.filter(name_surname__icontains=name)
 
-        if pakape:
-            queryset = queryset.filter(pakape__icontains=pakape)
+                if surname:
+                    queryset = queryset.filter(name_surname__icontains=surname)
+                serializer = FallenSerialiser(queryset, many=True)
+            case 1:
+                queryset = Mobilised.objects.all()
+                if name:
+                    queryset = queryset.filter(name__icontains=name)
 
-        serializer = BrigadeSerializer(queryset, many=True)
+                if surname:
+                    queryset = queryset.filter(surname__icontains=surname)
+                serializer = MobilisedSerializer(queryset, many=True)
+            case 3:
+                queryset = Zedelgem.objects.all()
+                if name:
+                    queryset = queryset.filter(name__icontains=name)
+
+                if surname:
+                    queryset = queryset.filter(surname__icontains=surname)
+                serializer = ZedelgemSerializer(queryset, many=True)
+            case _:
+                queryset = Brigade.objects.all()
+                if name:
+                    queryset = queryset.filter(name_surname__icontains=name)
+
+                if surname:
+                    queryset = queryset.filter(name_surname__icontains=surname)
+                serializer = BrigadeSerializer(queryset, many=True)
+
+        if rank:
+            queryset = queryset.filter(rank__icontains=rank)
+
         return Response(serializer.data)
-
-    def post(self, request):
-        serializer = BrigadeSerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
-            return Response(serializer.data)
-
-
-class MobilizetieView(APIView):
-    permission_classes = [AllowAny]
-
-    def get(self, request):
-        vards = request.GET.get('vards', '')
-        uzvards = request.GET.get('uzvards', '')
-        dzimsanas_datums = request.GET.get('dzimsanas_datums', '')
-        queryset = Mobilizetie.objects.all()
-
-        if vards:
-            queryset = queryset.filter(vards__icontains=vards)
-
-        if uzvards:
-            queryset = queryset.filter(uzvards__icontains=uzvards)
-
-        if dzimsanas_datums:
-            queryset = queryset.filter(
-                dzimsanas_datums__icontains=dzimsanas_datums)
-
-        serializer = MobilizetieSerializer(queryset, many=True)
-        return Response(serializer.data)
-
-    def post(self, request):
-        serializer = MobilizetieSerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
-            return Response(serializer.data)
-
-
-class ZedelgemaView(APIView):
-    permission_classes = [AllowAny]
-
-    def get(self, request):
-        vards = request.GET.get('vards', '')
-        uzvards = request.GET.get('uzvards', '')
-        dzimsanas_datums = request.GET.get('dzimsanas_datums', '')
-        queryset = Zedelgema.objects.all()
-
-        if vards:
-            queryset = queryset.filter(vards__icontains=vards)
-
-        if uzvards:
-            queryset = queryset.filter(uzvards__icontains=uzvards)
-
-        if dzimsanas_datums:
-            queryset = queryset.filter(
-                dzimsanas_datums__icontains=dzimsanas_datums)
-
-        serializer = ZedelgemaSerializer(queryset, many=True)
-        return Response(serializer.data)
-
-    def post(self, request):
-        serializer = ZedelgemaSerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
-            return Response(serializer.data)
-
-
-class KritusieView(APIView):
-    permission_classes = [AllowAny]
-
-    def get(self, request):
-        vards_uzvards = request.GET.get('vards_uzvards', '')
-        queryset = Kritusie.objects.all()
-
-        if vards_uzvards:
-            queryset = queryset.filter(vards_uzvards__icontains=vards_uzvards)
-
-        serializer = KritusieSerializer(queryset, many=True)
-        return Response(serializer.data)
-
-    def post(self, request):
-        serializer = KritusieSerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
-            return Response(serializer.data)
-
-# class KritusieView(APIView):
-#     permission_classes = [AllowAny]  # Allow unauthenticated access
-
-#     def get(self, request):
-#         vards_uzvards = request.GET.get('vards_uzvards', '')
-#         queryset = Kritusie.objects.all()
-
-#         # Normalize the query input
-#         if vards_uzvards:
-#             normalized_query = vards_uzvards.lower()
-#             queryset = [
-#                 entry for entry in queryset if fuzz.partial_ratio(
-#                     normalized_query, entry.vards_uzvards.lower()) > 60
-#             ]
-
-#         serializer = KritusieSerializer(queryset, many=True)
-#         return Response(serializer.data)
-
-#     def post(self, request):
-#         serializer = KritusieSerializer(data=request.data)
-#         if serializer.is_valid(raise_exception=True):
-#             serializer.save()
-#             return Response(serializer.data)
 
 
 class UserRegister(APIView):

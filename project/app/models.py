@@ -52,126 +52,105 @@ class Person(models.Model):
         return f"{self.name} {self.surname}"
 
 
-class React(models.Model):
-    nr = models.CharField(max_length=50, primary_key=True,
-                          default="Default Value")
-    pakape = models.CharField(max_length=100, default="Default Value")
-    uzvards_un_vards = models.CharField(
-        max_length=200, default="Default Value")
-    dienesta_vieniba = models.CharField(
-        max_length=200, default="Default Value")
-    ordenis = models.CharField(max_length=200, default="Default Value")
-    ordeņa_pakape = models.CharField(
-        null=True, blank=True, default="Default Value")
-    piezimes = models.CharField(
-        max_length=255, null=True, blank=True, default="Default Value")
-    arhīva_lieta = models.CharField(max_length=50, default="Default Value")
-
-    def __str__(self):
-        return f"{self.nr} - {self.pakape} {self.uzvards_un_vards}"
-
-
 class Brigade(models.Model):
-    nr = models.CharField(max_length=50, primary_key=True)
-    pakape = models.CharField(max_length=100)
-    uzvards_un_vards = models.CharField(max_length=200)
-    dienesta_vieniba = models.CharField(max_length=200)
-    ordenis = models.CharField(max_length=200, default="Default Value")
-    ordeņa_pakape = models.CharField(null=True, blank=True)
-    piezimes = models.CharField(max_length=255, null=True, blank=True)
-    arhīva_lieta = models.CharField(max_length=50)
-
-    def __str__(self):
-        return f"{self.nr} - {self.pakape} {self.uzvards_un_vards}"
-
-
-class Zedelgema(models.Model):
-    nr = models.CharField(max_length=50, primary_key=True)
-    dienesta_pakape = models.CharField(max_length=50)
-    uzvards = models.CharField(max_length=50)
-    vards = models.CharField(max_length=50)
-    dzimsanas_datums = models.CharField(max_length=20, null=True, blank=True)
-    dienesta_vieniba = models.TextField()
-    nometnes_nodalijums = models.IntegerField()
-    aizbraucis_uz_psrs = models.CharField(max_length=50, null=True, blank=True)
-    miris = models.CharField(max_length=50, null=True, blank=True)
-    piezimes = models.TextField(null=True, blank=True)
-
-    def __str__(self):
-        return f"{self.dienesta_pakape} {self.uzvards} {self.vards}"
-
-
-class Kritusie(models.Model):
     id = models.CharField(max_length=50, primary_key=True)
-    dienesta_pakape = models.CharField(max_length=50, blank=True,
-                                       null=True)  # Dienesta pakāpe
-    # Uzvārds, vārds un tēva vārds
-    vards_uzvards = models.CharField(max_length=255, blank=True,
+    rank = models.CharField(max_length=100)
+    name_surname = models.CharField(max_length=200)
+    unit = models.CharField(max_length=200)
+    order = models.CharField(max_length=200, default="Default Value")
+    order_level = models.CharField(max_length=255, null=True, blank=True)
+    notes = models.CharField(max_length=255, null=True, blank=True)
+    archive = models.CharField(max_length=50)
+
+    def __str__(self):
+        return f"{self.id} - {self.rank} {self.name_surname}"
+
+
+class Zedelgem(models.Model):
+    id = models.CharField(max_length=50, primary_key=True)
+    rank = models.CharField(max_length=50)
+    surname = models.CharField(max_length=50)
+    name = models.CharField(max_length=50)
+    birthdate = models.CharField(max_length=20, null=True, blank=True)
+    unit = models.TextField()
+    camp_section = models.IntegerField()
+    left_to_psrs = models.CharField(max_length=50, null=True, blank=True)
+    dieddate = models.CharField(max_length=50, null=True, blank=True)
+    notes = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.rank} {self.surname} {self.name}"
+
+
+class Fallen(models.Model):
+    id = models.CharField(max_length=50, primary_key=True)
+    rank = models.CharField(max_length=50, blank=True,
+                                       null=True) 
+    name_surname = models.CharField(max_length=255, blank=True,
                                      null=True)
-    vieniba = models.CharField(max_length=255, blank=True,
-                               null=True)  # Kādā vienībā
-    # Kritis vai miris no ievainojuma un kad
-    kritis_un_miris_no_ievainojuma_un_kad = models.CharField(max_length=100, blank=True,
+    unit = models.CharField(max_length=255, blank=True,
+                               null=True)
+    fallen_died_when = models.CharField(max_length=100, blank=True,
                                                              null=True)
-    apbedisanas_vieta = models.CharField(max_length=255, blank=True,
-                                         null=True)  # Kur apbedīts
-    piezimes = models.TextField(blank=True, null=True)  # Piezīmes
+    burrial_place = models.CharField(max_length=255, blank=True,
+                                         null=True)
+    notes = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        return f"{self.dienesta_pakape} {self.vards_uzvards}"
+        return f"{self.unit} {self.name_surname}"
 
 
-class Mobilizetie(models.Model):
+class Mobilised(models.Model):
     id = models.CharField(max_length=50, primary_key=True)
-    uzvards = models.CharField(
+    surname = models.CharField(
         max_length=500, null=True, blank=True)
-    vards = models.CharField(max_length=100, null=True,
+    name = models.CharField(max_length=100, null=True,
                              blank=True)
-    pirmā_dienesta_pakāpe = models.CharField(
+    first_rank = models.CharField(
         max_length=100, null=True, blank=True)
-    dzimsanas_datums = models.DateField(null=True, blank=True)
-    dzimsanas_vieta = models.CharField(
+    birthdate = models.DateField(null=True, blank=True)
+    birthplace = models.CharField(
         max_length=255, null=True, blank=True)
-    kritis_datums = models.CharField(
+    fallen_date = models.CharField(
         max_length=50, null=True, blank=True)
-    info_par_krisanu = models.TextField(
+    fallen_info = models.TextField(
         null=True, blank=True)
-    pazudis_datums = models.CharField(
+    missing_date = models.CharField(
         max_length=50, null=True, blank=True)
-    info_par_pazusanu = models.TextField(
+    missing_info = models.TextField(
         null=True, blank=True)
-    miris_datums = models.CharField(
+    death_date = models.CharField(
         max_length=50, null=True, blank=True)
-    info_par_mirsanu = models.TextField(null=True, blank=True)
-    kritis_gusta_datums = models.CharField(
+    death_info = models.TextField(null=True, blank=True)
+    captured_date = models.CharField(
         max_length=50, null=True, blank=True)
-    cits_naves_iemesls_datums = models.CharField(
+    other_death_date = models.CharField(
         max_length=50, null=True, blank=True)
-    iemesls = models.TextField(null=True, blank=True)
-    mobilizesanas_datums_labots = models.CharField(
+    other_death_reason = models.TextField(null=True, blank=True)
+    mobilised_date = models.CharField(
         max_length=255, null=True, blank=True)
-    pedeja_dzives_vieta = models.CharField(
+    last_location = models.CharField(
         max_length=255, null=True, blank=True)
-    pirmā_dienesta_vieniba_labots = models.CharField(
+    first_unit = models.CharField(
         max_length=255, null=True, blank=True)
-    nosutits_uz_citu_vienibu_kursiem = models.CharField(
+    sent_to_rank = models.CharField(
         max_length=255, null=True, blank=True)
-    aizbraucis_uz_lpsr = models.CharField(
+    went_to_psrs = models.CharField(
         max_length=50, null=True, blank=True)
-    paaugstinats_degradets = models.CharField(
+    promoted_degraded = models.CharField(
         max_length=255, null=True, blank=True)
-    dezertējis_datums = models.CharField(
+    deserted_date = models.CharField(
         max_length=50, null=True, blank=True)
-    atbrīvots_no_dienesta_datums = models.CharField(
+    released_date = models.CharField(
         max_length=50, null=True, blank=True)
-    atbrivosanas_iemesls = models.CharField(
+    released_reason = models.CharField(
         max_length=255, null=True, blank=True)
-    ievainots = models.TextField(null=True, blank=True)
-    navessods_arests = models.CharField(
+    wounded = models.TextField(null=True, blank=True)
+    death_sentence_arrest = models.CharField(
         max_length=255, null=True, blank=True)
-    apbalvots = models.TextField(null=True, blank=True)
-    cita_informacija = models.TextField(
+    awarded = models.TextField(null=True, blank=True)
+    other_info = models.TextField(
         null=True, blank=True)
 
     def __str__(self):
-        return f"{self.uzvards}, {self.vards} ({self.pirmā_dienesta_pakāpe})"
+        return f"{self.surname}, {self.name} ({self.first_rank})"

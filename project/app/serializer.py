@@ -62,36 +62,138 @@ class UserSerializer(serializers.ModelSerializer):
         model = AppUser
         fields = ('email', 'first_name', 'last_name', 'is_staff')
 
-
 class BrigadeSerializer(serializers.ModelSerializer):
+    name = serializers.SerializerMethodField()
+    surname = serializers.SerializerMethodField()
+
     class Meta:
         model = Brigade
-        fields = ['uzvards_un_vards', 'pakape',
-                  'dienesta_vieniba', 'ordenis', 'ordeņa_pakape', 'piezimes', 'arhīva_lieta']
+        fields = [
+            'id',
+            'rank',
+            'name',
+            'surname',
+            'unit',
+            'order',
+            'order_level',
+            'notes',
+            'archive',
+        ]
+
+    def get_name(self, obj):
+        parts = (obj.name_surname or '').strip().split()
+        return parts[1] if len(parts) > 1 else ''
+
+    def get_surname(self, obj):
+        parts = (obj.name_surname or '').strip().split()
+        if len(parts) >= 3:
+            # Everything except the second part (name) is part of the surname
+            return ' '.join([parts[0]] + parts[2:])
+        return parts[0] if parts else ''
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        return {key: value for key, value in representation.items() if value is not None}
 
 
-class MobilizetieSerializer(serializers.ModelSerializer):
+
+class MobilisedSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Mobilizetie
-        fields = ['uzvards', 'vards', 'dzimsanas_datums', 'dzimsanas_vieta', 'pedeja_dzives_vieta', 'mobilizesanas_datums_labots',
-                  'pirmā_dienesta_vieniba_labots', 'pirmā_dienesta_pakāpe', 'kritis_datums', 'info_par_krisanu', 'pazudis_datums',
-                  'info_par_pazusanu', 'miris_datums', 'info_par_mirsanu',  'dezertējis_datums', 'apbalvots', 'paaugstinats_degradets',
-                  'atbrīvots_no_dienesta_datums', 'atbrivosanas_iemesls', 'ievainots', 'navessods_arests', 'cita_informacija']
+        model = Mobilised
+        fields = [
+            'id',
+            'surname',
+            'name',
+            'birthdate',
+            'birthplace',
+            'last_location',
+            'mobilised_date',
+            'first_unit',
+            'first_rank',
+            'fallen_date',
+            'fallen_info',
+            'missing_date',
+            'missing_info',
+            'death_date',
+            'death_info',
+            'captured_date',
+            'other_death_date',
+            'other_death_reason',
+            'deserted_date',
+            'awarded',
+            'promoted_degraded',
+            'released_date',
+            'released_reason',
+            'wounded',
+            'death_sentence_arrest',
+            'other_info',
+        ]
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        return {key: value for key, value in representation.items() if value is not None}
 
 
-class ZedelgemaSerializer(serializers.ModelSerializer):
+class ZedelgemSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Zedelgema
-        fields = ['uzvards', 'vards', 'dzimsanas_datums',
-                  'dienesta_pakape', 'dienesta_vieniba', 'nometnes_nodalijums',
-                  'aizbraucis_uz_psrs', 'miris', 'piezimes']
+        model = Zedelgem
+        fields = [
+            'id',
+            'rank',
+            'surname',
+            'name',
+            'birthdate',
+            'unit',
+            'camp_section',
+            'left_to_psrs',
+            'dieddate',
+            'notes'
+        ]
+    
+    def get_name(self, obj):
+        parts = (obj.name_surname or '').strip().split()
+        return parts[1] if len(parts) > 1 else ''
+
+    def get_surname(self, obj):
+        parts = (obj.name_surname or '').strip().split()
+        if len(parts) >= 3:
+            return ' '.join([parts[0]] + parts[2:])
+        return parts[0] if parts else ''
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        return {k: v for k, v in representation.items() if v is not None}
 
 
-class KritusieSerializer(serializers.ModelSerializer):
+class FallenSerialiser(serializers.ModelSerializer):
+    name = serializers.SerializerMethodField()
+    surname = serializers.SerializerMethodField()
+
     class Meta:
-        model = Kritusie
-        fields = ['vards_uzvards', 'dienesta_pakape',
-                  'vieniba', 'kritis_un_miris_no_ievainojuma_un_kad', 'apbedisanas_vieta', 'piezimes']
+        model = Fallen
+        fields = [
+            'surname',
+            'name',
+            'rank',
+            'unit',
+            'fallen_died_when',
+            'burrial_place',
+            'notes'
+        ]
+
+    def get_name(self, obj):
+        parts = (obj.name_surname or '').strip().split()
+        return parts[1] if len(parts) > 1 else ''
+
+    def get_surname(self, obj):
+        parts = (obj.name_surname or '').strip().split()
+        if len(parts) >= 3:
+            return ' '.join([parts[0]] + parts[2:])
+        return parts[0] if parts else ''
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        return {k: v for k, v in representation.items() if v is not None}
 
 
 class ChangePasswordSerializer(serializers.Serializer):
