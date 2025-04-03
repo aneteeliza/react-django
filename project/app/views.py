@@ -43,9 +43,11 @@ class SearchView(APIView):
     def get(self, request):
         name = request.GET.get('name', '')
         surname = request.GET.get('surname', '')
-        birthyear = request.GET.get('birthyear', '')
-        rank = request.GET.get('rank', '')
+        birthdate = request.GET.get('birthdate', '')
+        unit = request.GET.get('unit', '')
         table = int(request.GET.get('table', 0))
+
+        dash_birthdate = birthdate.replace('-', '.') if birthdate else ''
 
         match table:
             case 2:
@@ -55,6 +57,9 @@ class SearchView(APIView):
 
                 if surname:
                     queryset = queryset.filter(name_surname__icontains=surname)
+
+                if unit:
+                    queryset = queryset.filter(unit__icontains=unit)
                 serializer = FallenSerialiser(queryset, many=True)
             case 1:
                 queryset = Mobilised.objects.all()
@@ -63,14 +68,33 @@ class SearchView(APIView):
 
                 if surname:
                     queryset = queryset.filter(surname__icontains=surname)
+
+                if birthdate:
+                    queryset = queryset.filter(
+                        Q(birthdate__icontains=birthdate) | 
+                        Q(birthdate__icontains=dash_birthdate)
+                    )
+
+                if unit:
+                    queryset = queryset.filter(first_unit__icontains=unit)
                 serializer = MobilisedSerializer(queryset, many=True)
             case 3:
                 queryset = Zedelgem.objects.all()
+                
                 if name:
                     queryset = queryset.filter(name__icontains=name)
 
                 if surname:
                     queryset = queryset.filter(surname__icontains=surname)
+
+                if birthdate:
+                    queryset = queryset.filter(
+                        Q(birthdate__icontains=birthdate) |
+                        Q(birthdate__icontains=dash_birthdate)
+                    )
+
+                if unit:
+                    queryset = queryset.filter(unit__icontains=unit)
                 serializer = ZedelgemSerializer(queryset, many=True)
             case _:
                 queryset = Brigade.objects.all()
@@ -79,10 +103,10 @@ class SearchView(APIView):
 
                 if surname:
                     queryset = queryset.filter(name_surname__icontains=surname)
-                serializer = BrigadeSerializer(queryset, many=True)
 
-        if rank:
-            queryset = queryset.filter(rank__icontains=rank)
+                if unit:
+                    queryset = queryset.filter(unit__icontains=unit)
+                serializer = BrigadeSerializer(queryset, many=True)
 
         return Response(serializer.data)
 
@@ -185,26 +209,6 @@ def profile_view(request):
     return JsonResponse({
         "email": user.email,
     })
-
-
-def unified_search_view(request):
-    # fetching data from different endpoints
-    kritusie_data = requests.get('http://127.0.0.1:8000/kritusie/').json()
-    brigade_data = requests.get('http://127.0.0.1:8000/brigade/').json()
-    mobilizetie_data = requests.get(
-        'http://127.0.0.1:8000/mobilizetie/').json()
-    zedelgema_data = requests.get('http://127.0.0.1:8000/zedelgema/').json()
-
-    # Map data using utility functions
-    all_data = (
-        [map_kritusie_data(item) for item in kritusie_data] +
-        [map_brigade_data(item) for item in brigade_data] +
-        [map_mobilizetie_data(item) for item in mobilizetie_data] +
-        [map_zedelgema_data(item) for item in zedelgema_data]
-    )
-
-    # Return unified JSON response
-    return JsonResponse(all_data, safe=False)
 
 
 class ChangePasswordView(APIView):

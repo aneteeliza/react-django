@@ -108,7 +108,7 @@ class Mobilised(models.Model):
                              blank=True)
     first_rank = models.CharField(
         max_length=100, null=True, blank=True)
-    birthdate = models.DateField(null=True, blank=True)
+    birthdate = models.CharField(max_length=20, null=True, blank=True)
     birthplace = models.CharField(
         max_length=255, null=True, blank=True)
     fallen_date = models.CharField(
