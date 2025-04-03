@@ -7,16 +7,7 @@ import './App.css';
 import Profils from './pages/Profile';
 import Info from './pages/Info';
 import { FaHome, FaSearch, FaUser, FaSignOutAlt, FaSignInAlt, FaUserPlus } from 'react-icons/fa';
-import axios from 'axios';
-
-axios.defaults.baseURL = 'http://127.0.0.1:8000';
-axios.defaults.xsrfCookieName = 'csrftoken';
-axios.defaults.xsrfHeaderName = 'X-CSRFToken';
-axios.defaults.withCredentials = true;
-
-const client = axios.create({
-  baseURL: "http://127.0.0.1:8000"
-});
+import { NetworkProvider } from './NetworkProvider';
 
 function App() {
   const [currentUser, setCurrentUser] = useState(() => localStorage.getItem('currentUser') === 'true');
@@ -43,95 +34,86 @@ function App() {
 
   function validateFields() {
     if (!email || !password || (registrationToggle && (!firstName || !lastName))) {
-      setErrorMessage('Visi lauki ir jāaizpilda!'); 
+      setErrorMessage('Visi lauki ir jāaizpilda!');
       return false;
     }
     setErrorMessage('');
     return true;
   }
 
-  function submitLogin(e) {
+  async function submitLogin(e) {
     e.preventDefault();
     if (!validateFields()) return;
 
-    client.post("/login", { email, password })
-      .then(() => {
-        localStorage.setItem('currentUser', 'true');
-        setCurrentUser(true);
-        navigate('/');
-      })
-      .catch(error => {
-        console.error('Login error:', error);
-        setErrorMessage('Pietikšanās neizdevās. Pārbaudiet e-pastu un paroli.');
-      });
+    try {
+      const user = await NetworkProvider.loginUser({ email, password });
+      console.log(user);
+      localStorage.setItem('currentUser', 'true');
+      setCurrentUser(true);
+      navigate('/');
+    } catch (error) {
+      console.error('Login error:', error);
+      setErrorMessage('Pietikšanās neizdevās. Pārbaudiet e-pastu un paroli.');
+    }
   }
 
-  function submitRegistration(e) {
+  async function submitRegistration(e) {
     e.preventDefault();
     if (!validateFields()) return;
-  
-    client.post("/register", { 
-      email, 
-      password, 
-      confirm_password: confirmPassword, 
-      first_name: firstName, 
-      last_name: lastName 
-    })
-    .then(() => {
-      client.post("/login", { email, password })
-        .then(() => {
-          localStorage.setItem('currentUser', 'true');
-          setCurrentUser(true);
-          navigate('/');
-        });
-    })
-    .catch(error => {
+
+    try {
+      await NetworkProvider.registerUser({
+        email,
+        password,
+        confirm_password: confirmPassword,
+        first_name: firstName,
+        last_name: lastName,
+      });
+
+      const user = await NetworkProvider.loginUser({ email, password });
+
+      localStorage.setItem('currentUser', 'true');
+      setCurrentUser(true);
+      navigate('/');
+    } catch (error) {
       if (error.response && error.response.data) {
-        // Error handling based on field-specific errors
         const errorData = error.response.data;
-  
-        // Check if email error exists
+
         if (errorData.email) {
           console.error('Email Error:', errorData.email);
-          setErrorMessage(errorData.email); // Display email-specific error
-        }
-        // Check if password error exists
-        else if (errorData.password) {
+          setErrorMessage(errorData.email);
+        } else if (errorData.password) {
           console.error('Password Error:', errorData.password);
-          setErrorMessage(errorData.password); // Display password-specific error
-        }
-        // General error fallback
-        else {
+          setErrorMessage(errorData.password);
+        } else {
           const generalError = errorData.detail || 'Reģistrācija neizdevās. Mēģiniet vēlreiz.';
           console.error('General Error:', generalError);
-          setErrorMessage(generalError); // Display general error
+          setErrorMessage(generalError);
         }
       } else {
-        // If no response, display a generic error message
         console.error('Kļūda reģistrācijā:', error);
         setErrorMessage('Reģistrācija neizdevās. Mēģiniet vēlreiz.');
       }
-    });
+    }
   }
-  
-  
 
-  function submitLogout(e) {
+
+
+  async function submitLogout(e) {
     e.preventDefault();
-    client.post("/logout")
-      .then(() => {
-        localStorage.removeItem('currentUser');
-        setCurrentUser(false);
-        setEmail('');
-        setPassword('');
-        setFirstName('');
-        setLastName('');
-        setConfirmPassword('');
-        navigate('/login');
-      })
-      .catch(error => {
-        console.error('Logout error:', error);
-      });
+    try {
+      await NetworkProvider.logoutUser();
+      localStorage.removeItem('currentUser');
+      setCurrentUser(false);
+      setEmail('');
+      setPassword('');
+      setFirstName('');
+      setLastName('');
+      setConfirmPassword('');
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   }
 
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -190,7 +172,7 @@ function App() {
                 </form>
               ) : (
                 <Button id="form_btn" onClick={update_form_btn} variant="outline-dark" className="text-light">
-                  {registrationToggle ? <><FaSignInAlt className="me-2 icon-button"/> Pieteikties</> : <><FaUserPlus className="me-2 icon-button"/> Reģistrēties</>}
+                  {registrationToggle ? <><FaSignInAlt className="me-2 icon-button" /> Pieteikties</> : <><FaUserPlus className="me-2 icon-button" /> Reģistrēties</>}
                 </Button>
               )}
             </Navbar.Text>
@@ -210,17 +192,17 @@ function App() {
                   <Form.Control type="email" placeholder="Ievadiet e-pasta adresi" value={email} onChange={e => setEmail(e.target.value)} className="rounded-pill" />
                 </Form.Group> */}
                 <Form.Group className="mb-3 w-100">
-      <Form.Label>E-pasta adrese</Form.Label>
-      <Form.Control
-        type="email"
-        placeholder="Ievadiet e-pasta adresi"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        onBlur={validateEmail} 
-        className={`rounded-pill ${error ? "is-invalid" : ""}`} 
-      />
-      {error && <div className="invalid-feedback">{error}</div>}
-    </Form.Group>
+                  <Form.Label>E-pasta adrese</Form.Label>
+                  <Form.Control
+                    type="email"
+                    placeholder="Ievadiet e-pasta adresi"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    onBlur={validateEmail}
+                    className={`rounded-pill ${error ? "is-invalid" : ""}`}
+                  />
+                  {error && <div className="invalid-feedback">{error}</div>}
+                </Form.Group>
                 {registrationToggle && (
                   <>
                     <Form.Group className="mb-3 w-100">
@@ -241,12 +223,12 @@ function App() {
                   <>
                     <Form.Group className="mb-3 w-100">
                       <Form.Label>Apstipriniet paroli</Form.Label>
-                      <Form.Control 
-                        type="password" 
-                        placeholder="Atkārtoti ievadiet paroli" 
-                        value={confirmPassword} 
-                        onChange={e => setConfirmPassword(e.target.value)} 
-                        className="rounded-pill" 
+                      <Form.Control
+                        type="password"
+                        placeholder="Atkārtoti ievadiet paroli"
+                        value={confirmPassword}
+                        onChange={e => setConfirmPassword(e.target.value)}
+                        className="rounded-pill"
                       />
                     </Form.Group>
 

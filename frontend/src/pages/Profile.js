@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { Form, Button, Container, Spinner, Alert, Modal, Card } from 'react-bootstrap';
 import './styles.css';
+import { NetworkProvider } from '../NetworkProvider';
 
 function Profils() {
-  const [profile, setProfile] = useState({ email: ''});
-  const [originalProfile, setOriginalProfile] = useState({ email: ''});
+  const [profile, setProfile] = useState({ email: '' });
+  const [originalProfile, setOriginalProfile] = useState({ email: '' });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);  
+  const [error, setError] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [successMessage, setSuccessMessage] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
@@ -16,72 +16,62 @@ function Profils() {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
-  const [passwordChangeError, setPasswordChangeError] = useState(null); 
+  const [passwordChangeError, setPasswordChangeError] = useState(null);
   const [confirmPassword, setConfirmPassword] = useState('');
 
 
   useEffect(() => {
-    axios
-      .get('http://127.0.0.1:8000/user')
-      .then(response => {
-        const fetchedProfile = {
-          email: response.data.user.email,
-          first_name: response.data.user.first_name,
-          last_name: response.data.user.last_name,
-        };
-        setProfile(fetchedProfile);
-        setOriginalProfile(fetchedProfile);
-        setLoading(false);
-      })
-      .catch(error => {
-        setError(
-          error.response ? error.response.data : 'Kaut kas nogāja greizi!'
-        );
-        setLoading(false); 
-      });
+    fetchUser()
   }, []);
 
-  const handleEditToggle = () => {
+  const fetchUser = async () => {
+    try {
+      setLoading(true)
+      const response = await NetworkProvider.getUser()
+      const profile = {
+        email: response.user.email,
+        first_name: response.user.first_name,
+        last_name: response.user.last_name,
+      };
+      setProfile(profile);
+      setOriginalProfile(profile);
+      setLoading(false)
+    } catch (error) {
+      setError(
+        error.response ? error.response.data : 'Kaut kas nogāja greizi!'
+      );
+      setLoading(false);
+    }
+  }
+
+  const handleEditToggle = async () => {
     if (!profile.email.includes('@')) {
       setErrorMessage('E-pastam jābūt saturētam "@".');
       return; // Prevent further execution if the email is invalid
     }
 
     if (editMode) {
-      const csrfToken = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('csrftoken='))
-        ?.split('=')[1];
-  
-      axios
-        .put('http://127.0.0.1:8000/user', profile, {
-          headers: {
-            'X-CSRFToken': csrfToken, 
-          },
-          withCredentials: true, 
-        })
-        .then(response => {
-          setError(null); 
-          setSuccessMessage('Profila informācija veiksmīgi rediģēta!');
-        })
-        .catch(error => {
-          setError(null);
-          setErrorMessage('Izvēlies citu e-pastu. Lietotājs ar šādu e-pastu jau ir reģistrēts.');
-        });  
-      }       
-    setEditMode(!editMode); 
-  };
-  
+      try {
+        await NetworkProvider.updateUser(profile)
+        setError(null);
+        setSuccessMessage('Profila informācija veiksmīgi rediģēta!');
+      } catch (error) {
+        setError(null);
+        setErrorMessage('Izvēlies citu e-pastu. Lietotājs ar šādu e-pastu jau ir reģistrēts.');
+      }
 
-  
+    }
+    setEditMode(!editMode);
+  };
+
 
   const handleInputChange = e => {
     const { name, value } = e.target;
     setProfile(prevState => ({ ...prevState, [name]: value }));
   };
-  
 
-  const handleChangePassword = () => {
+
+  const handleChangePassword = async () => {
     const csrfToken = document.cookie
       .split('; ')
       .find(row => row.startsWith('csrftoken='))
@@ -100,102 +90,73 @@ function Profils() {
     if (newPassword.length < 8) {
       passwordValidationErrors.push('Parolei jābūt vismaz 8 simbolu garai.');
     }
-    
+
     // Check for at least one number
     if (!/\d/.test(newPassword)) {
       passwordValidationErrors.push('Parolei jāsatur vismaz 1 cipars.');
     }
     if (passwordValidationErrors.length > 0) {
-      setPasswordError(passwordValidationErrors.join(' ')); 
-      return; 
+      setPasswordError(passwordValidationErrors.join(' '));
+      return;
     }
-    setPasswordError(''); 
+    setPasswordError('');
     setPasswordChangeError(null);
 
-    axios
-      .put('http://127.0.0.1:8000/user/change-password', {
-        current_password: currentPassword,
-        new_password: newPassword,
-      }, {
-        headers: {
-          'X-CSRFToken': csrfToken,
-          'Content-Type': 'application/json',
-        },
-        withCredentials: true,
-      })
-      .then(response => {
-        setSuccessMessage('Parole veiksmīgi nomainīta!');
-        setCurrentPassword(''); 
-        setNewPassword(''); 
-        setShowPasswordModal(false); 
+    try {
+      await NetworkProvider.changePassword(currentPassword, newPassword)
+      setSuccessMessage('Parole veiksmīgi nomainīta!');
+      setCurrentPassword('');
+      setNewPassword('');
+      setShowPasswordModal(false);
 
-        return axios.post('http://127.0.0.1:8000/login', {
-          email: profile.email,
-          password: newPassword,
-        }, {
-          headers: {
-            'X-CSRFToken': csrfToken,
-          },
-          withCredentials: true,
-        });
-      })
-      .then(() => {
-        console.log('User re-authenticated');
-      })
-      .catch(error => {
-        if (error.response) {
-          if (error.response.data.current_password) {
-            setPasswordChangeError('Pašreizēja parole ir nepareiza.');
-          } else {
-            setPasswordChangeError(error.response.data.detail || 'Kļūda paroles maiņā.');
-          }
+      await NetworkProvider.loginUser(profile.email, newPassword)
+      console.log('User re-authenticated');
+    } catch (error) {
+      if (error.response) {
+        if (error.response.data.current_password) {
+          setPasswordChangeError('Pašreizēja parole ir nepareiza.');
         } else {
-          setPasswordChangeError('Radās kļūda, mainot paroli!');
+          setPasswordChangeError(error.response.data.detail || 'Kļūda paroles maiņā.');
         }
-      });
+      } else {
+        setPasswordChangeError('Radās kļūda, mainot paroli!');
+      }
+    }
   };
 
-  const handleDeleteProfile = () => {
+  const handleDeleteProfile = async () => {
     const csrfToken = document.cookie
       .split('; ')
       .find(row => row.startsWith('csrftoken='))
       ?.split('=')[1];
-  
-    axios
-      .delete('http://127.0.0.1:8000/user', {
-        headers: {
-          'X-CSRFToken': csrfToken,
-        },
-        withCredentials: true,
-      })
-      .then(() => {
-        setSuccessMessage('Profils ir izdzēsts');
-        setProfile({});
-        document.cookie = 'csrftoken=; Max-Age=0'; // Clear CSRF token
-        document.cookie = 'sessionid=; Max-Age=0'; // Clear session cookie
-        localStorage.clear(); // Clear any local storage
-        window.location.href = '/login'; // Redirect to login
-      })
-      .catch(error => {
-        setError(
-          error.response ? error.response.data : 'Kaut kas nogāja greizi!'
-        );
-      })
-      .finally(() => {
-        setShowDeleteModal(false);
-      });
+
+    try {
+      await NetworkProvider.deleteUser()
+      setSuccessMessage('Profils ir izdzēsts');
+      setProfile({});
+      document.cookie = 'csrftoken=; Max-Age=0'; // Clear CSRF token
+      document.cookie = 'sessionid=; Max-Age=0'; // Clear session cookie
+      localStorage.clear(); // Clear any local storage
+      window.location.href = '/login'; // Redirect to login
+    } catch (error) {
+      setError(
+        error.response ? error.response.data : 'Kaut kas nogāja greizi!'
+      );
+    } finally {
+      setShowDeleteModal(false);
+    }
   };
 
   const isFormValid = () => {
     return profile.first_name.trim() !== '' && profile.last_name.trim() !== '' && profile.email.trim() !== '';
   };
-  
+
   return (
     <Container className="p-4">
       <div className="d-flex justify-content-center align-items-center">
         <Card className="w-50 text-center p-4 shadow-lg rounded">
           <h1>Profils</h1>
-  
+
           {loading ? (
             <Spinner animation="border" />
           ) : error ? (
@@ -218,7 +179,7 @@ function Profils() {
 
               <Form>
                 <Form.Group className="mb-3 w-100">
-                  <Form.Label style={{ display: 'block', textAlign: 'left', fontWeight: 'bold'  }}>E-pasta adrese</Form.Label>
+                  <Form.Label style={{ display: 'block', textAlign: 'left', fontWeight: 'bold' }}>E-pasta adrese</Form.Label>
                   <Form.Control
                     type="email"
                     name="email"
@@ -228,9 +189,9 @@ function Profils() {
                     onChange={handleInputChange}
                   />
                 </Form.Group>
-  
+
                 <Form.Group className="mb-3 w-100">
-                  <Form.Label style={{ display: 'block', textAlign: 'left', fontWeight: 'bold'  }}>Vārds</Form.Label>
+                  <Form.Label style={{ display: 'block', textAlign: 'left', fontWeight: 'bold' }}>Vārds</Form.Label>
                   <Form.Control
                     type="text"
                     name="first_name"
@@ -240,9 +201,9 @@ function Profils() {
                     onChange={handleInputChange}
                   />
                 </Form.Group>
-  
+
                 <Form.Group className="mb-3 w-100">
-                  <Form.Label style={{ display: 'block', textAlign: 'left', fontWeight: 'bold'  }}>Uzvārds</Form.Label>
+                  <Form.Label style={{ display: 'block', textAlign: 'left', fontWeight: 'bold' }}>Uzvārds</Form.Label>
                   <Form.Control
                     type="text"
                     name="last_name"
@@ -252,7 +213,7 @@ function Profils() {
                     onChange={handleInputChange}
                   />
                 </Form.Group>
-  
+
                 {/* Show "Nomainīt paroli" only when not in edit mode */}
                 {!editMode && (
                   <Button
@@ -263,14 +224,14 @@ function Profils() {
                     Nomainīt paroli
                   </Button>
                 )}
-  
+
                 {editMode && (
                   <Button
                     variant="dark"
                     className="me-2"
                     onClick={() => {
                       setEditMode(false);
-                      setProfile(originalProfile); 
+                      setProfile(originalProfile);
                     }}
                   >
                     Atcelt
@@ -284,7 +245,7 @@ function Profils() {
                 >
                   {editMode ? 'Saglabāt izmaiņas' : 'Rediģēt'}
                 </Button>
-  
+
                 <Button
                   variant="danger"
                   onClick={() => setShowDeleteModal(true)}
@@ -297,7 +258,7 @@ function Profils() {
           )}
         </Card>
       </div>
-  
+
       {/* Modal for Password Change */}
       <Modal show={showPasswordModal} onHide={() => setShowPasswordModal(false)} centered>
         <Modal.Header closeButton>
@@ -319,7 +280,7 @@ function Profils() {
                 onChange={(e) => setCurrentPassword(e.target.value)}
               />
             </Form.Group>
-  
+
             <Form.Group className="mb-3 w-100">
               <Form.Label>Jaunā parole</Form.Label>
               <Form.Control
@@ -329,7 +290,7 @@ function Profils() {
                 onChange={(e) => setNewPassword(e.target.value)}
               />
             </Form.Group>
-  
+
             <Form.Group className="mb-3 w-100">
               <Form.Label>Apstiprināt jauno paroli</Form.Label>
               <Form.Control
@@ -339,7 +300,7 @@ function Profils() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
               />
             </Form.Group>
-  
+
             {passwordError && <Alert variant="danger">{passwordError}</Alert>}
           </Form>
         </Modal.Body>
@@ -352,7 +313,7 @@ function Profils() {
           </Button>
         </Modal.Footer>
       </Modal>
-  
+
       {/* Modal for Delete Confirmation */}
       <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>
         <Modal.Header closeButton>
@@ -373,7 +334,7 @@ function Profils() {
       </Modal>
     </Container>
   );
-  
+
 }
 
 export default Profils;

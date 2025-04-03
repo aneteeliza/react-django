@@ -33,8 +33,8 @@ from . validations import custom_validation, validate_email, validate_password
 # Create your views here.
 from rest_framework.permissions import AllowAny
 
-from django.views.decorators.csrf import csrf_exempt
-from django.middleware.csrf import get_token
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.utils.decorators import method_decorator
 
 
 class SearchView(APIView):
@@ -138,10 +138,10 @@ class UserRegister(APIView):
         return Response({"detail": "Invalid data."}, status=status.HTTP_400_BAD_REQUEST)
 
 
+@method_decorator(ensure_csrf_cookie, name='dispatch')
 class UserLogin(APIView):
     permission_classes = (permissions.AllowAny,)
     authentication_classes = (SessionAuthentication,)
-    ##
 
     def post(self, request):
         data = request.data
