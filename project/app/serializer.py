@@ -69,7 +69,6 @@ class BrigadeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Brigade
         fields = [
-            'id',
             'rank',
             'name',
             'surname',
@@ -101,7 +100,6 @@ class MobilisedSerializer(serializers.ModelSerializer):
     class Meta:
         model = Mobilised
         fields = [
-            'id',
             'surname',
             'name',
             'birthdate',
@@ -138,7 +136,6 @@ class ZedelgemSerializer(serializers.ModelSerializer):
     class Meta:
         model = Zedelgem
         fields = [
-            'id',
             'rank',
             'surname',
             'name',

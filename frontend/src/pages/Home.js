@@ -8,6 +8,7 @@ import { BsArrowUp } from 'react-icons/bs';
 import './styles.css';
 import Card from 'react-bootstrap/Card';
 import { NetworkProvider } from '../NetworkProvider';
+import { useTranslation } from 'react-i18next';
 
 export default function Home() {
   const [nameSearch, setNameSearch] = useState('');
@@ -15,7 +16,7 @@ export default function Home() {
   const [people, setPeople] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [selectedPerson, setSelectedPerson] = useState(null);
-  // eslint-disable-next-line
+
   const [selectedTable, setSelectedTable] = useState(2);
   const [showTopButton, setShowTopButton] = useState(false);
   const [isStaff, setIsStaff] = useState(false);
@@ -25,15 +26,14 @@ export default function Home() {
   const [error, setError] = useState(null);
 
 
-  const [searchTerm, setSearchTerm] = useState('');
-  const [dienestaVieniba, setDienestaVieniba] = useState('');
-
 
   const [dienestaVienibaSearch, setDienestaVienibaSearch] = useState('');
   const [vienibaSearch, setVienibaSearch] = useState('');
 
   const handleDienestaVienibaSearch = (event) => setDienestaVienibaSearch(event.target.value);
   const handleVienibaSearch = (event) => setVienibaSearch(event.target.value);
+
+  const { t } = useTranslation();
 
   useEffect(() => {
     fetchUser()
@@ -55,26 +55,11 @@ export default function Home() {
       setLoading(false); // Stop loading after data is fetched
     } catch (error) {
       setError(
-        error.response ? error.response.data : 'Kaut kas nogāja greizi!'
+        error.response ? error.response.data : t('Kaut kas nogāja greizi')
       );
       setLoading(false); // Stop loading on error
     }
   }
-
-  const databaseEndpoints = {
-    brigade: 'http://localhost:8000/brigade/',
-    zedelgema: 'http://127.0.0.1:8000/zedelgema/',
-    mobilizetie: 'http://127.0.0.1:8000/mobilizetie/',
-    kritusie: 'http://127.0.0.1:8000/kritusie/',
-  };
-
-
-  const databaseNames = {
-    brigade: '2.brigādes apbalvotie',
-    zedelgema: 'Zedelgemas karagūstekņu nometnē ieslodzītie',
-    mobilizetie: 'Latviešu leģionā mobilizētie',
-    kritusie: 'Kritušie un bez vēsts pazudušie leģionāri',
-  };
 
   const isBirthdateSearchEnabled = selectedTable == 1 || selectedTable == 3;
 
@@ -190,16 +175,10 @@ export default function Home() {
     setSelectedTable(parseInt(eventKey))
   };
 
-  const formatLabel = (key) => {
-    return key
-      .replace(/_/g, ' ')               // Replace underscores with spaces
-      .replace(/\b\w/g, l => l.toUpperCase()); // Capitalize each word
-  };
-
   return (
     <div className="search">
       <Card className="p-4 shadow-lg">
-        <h2>Meklēšana</h2>
+        <h2>{t("Meklēšana")}</h2>
 
         <Dropdown onSelect={handleTableSelect}>
           <Dropdown.Toggle id="dropdown-basic">
@@ -207,25 +186,25 @@ export default function Home() {
               (() => {
                 switch (selectedTable) {
                   case 0:
-                    return "2.brigādes apbalvotie";
+                    return t("2.brigādes apbalvotie");
                   case 1:
-                    return "Latviešu leģionā mobilizētie";
+                    return t("Latviešu leģionā mobilizētie");
                   case 2:
-                    return "Kritušie un bez vēsts pazudušie leģionāri";
+                    return t("Kritušie un bez vēsts pazudušie leģionāri");
                   case 3:
-                    return "Zedelgemas karagūstekņu nometnē ieslodzītie";
+                    return t("Zedelgemas karagūstekņu nometnē ieslodzītie");
                   default:
-                    return "Izvēlies datubāzi"; // Default fallback
+                    return t("Izvēlies datubāzi");
                 }
               })()
             }
           </Dropdown.Toggle>
 
           <Dropdown.Menu id="dropdown-basic-menu">
-            <Dropdown.Item eventKey={1}>Latviešu leģionā mobilizētie</Dropdown.Item>
-            <Dropdown.Item eventKey={3}>Zedelgemas karagūstekņu nometnē ieslodzītie</Dropdown.Item>
-            <Dropdown.Item eventKey={2}>Kritušie un bez vēsts pazudušie leģionāri</Dropdown.Item>
-            <Dropdown.Item eventKey={0}>2.brigādes apbalvotie</Dropdown.Item>
+            <Dropdown.Item eventKey={1}>{t("Latviešu leģionā mobilizētie")}</Dropdown.Item>
+            <Dropdown.Item eventKey={3}>{t("Zedelgemas karagūstekņu nometnē ieslodzītie")}</Dropdown.Item>
+            <Dropdown.Item eventKey={2}>{t("Kritušie un bez vēsts pazudušie leģionāri")}</Dropdown.Item>
+            <Dropdown.Item eventKey={0}>{t("2.brigādes apbalvotie")}</Dropdown.Item>
           </Dropdown.Menu>
         </Dropdown>
 
@@ -234,8 +213,8 @@ export default function Home() {
           id="nameSearch"
           value={nameSearch}
           onChange={handleNameSearch}
-          placeholder="Meklēt pēc vārda un/vai uzvārda"
-          title="Ierakstiet vismaz 3 simbolus, lai meklētu pēc vārda un/vārda"
+          placeholder={t("Meklēt pēc vārda un/vai uzvārda")}
+          title={t("Ierakstiet vismaz 3 simbolus, lai meklētu pēc vārda un/vārda")}
           style={{
             border: nameSearch.length > 0 && nameSearch.length < 3 ? '1px solid red' :
               nameSearch.length >= 3 ? '1px solid green' : '1px solid #ccc',
@@ -249,8 +228,8 @@ export default function Home() {
             id="dienestaVienibaSearch"
             value={dienestaVienibaSearch}
             onChange={handleDienestaVienibaSearch}
-            placeholder="Meklēt pēc dienesta vienības"
-            title="Ieraksti vismaz 3 simbolus, lai meklētu pēc dienesta vienības"
+            placeholder={t("Meklēt pēc dienesta vienības")}
+            title={t("Ieraksti vismaz 3 simbolus, lai meklētu pēc dienesta vienības")}
             style={{
               border: dienestaVienibaSearch.length > 0 && dienestaVienibaSearch.length < 3 ? '1px solid red' :
                 dienestaVienibaSearch.length >= 3 ? '1px solid green' : '1px solid #ccc',
@@ -264,8 +243,8 @@ export default function Home() {
             id="dienestaVienibaSearch"
             value={dienestaVienibaSearch}
             onChange={handleDienestaVienibaSearch}
-            placeholder="Meklēt pēc dienesta vienības"
-            title="Ieraksti vismaz 3 simbolus, lai meklētu pēc dienesta vienības"
+            placeholder={t("Meklēt pēc dienesta vienības")}
+            title={t("Ieraksti vismaz 3 simbolus, lai meklētu pēc dienesta vienības")}
             style={{
               border: dienestaVienibaSearch.length > 0 && dienestaVienibaSearch.length < 3 ? '1px solid red' :
                 dienestaVienibaSearch.length >= 3 ? '1px solid green' : '1px solid #ccc',
@@ -279,8 +258,8 @@ export default function Home() {
             id="vienibaSearch"
             value={vienibaSearch}
             onChange={handleVienibaSearch}
-            placeholder="Meklēt pēc dienesta vienības"
-            title="Ieraksti vismaz 3 simbolus, lai meklētu pēc dienesta vienības"
+            placeholder={t("Meklēt pēc dienesta vienības")}
+            title={t("Ieraksti vismaz 3 simbolus, lai meklētu pēc dienesta vienības")}
             style={{
               border: vienibaSearch.length > 0 && vienibaSearch.length < 3 ? '1px solid red' :
                 vienibaSearch.length >= 3 ? '1px solid green' : '1px solid #ccc',
@@ -294,8 +273,8 @@ export default function Home() {
             id="birthdateSearch"
             value={birthdateSearch}
             onChange={handleBirthdateSearch}
-            placeholder="Meklēt pēc dzimšanas datuma GGGG-MM-DD"
-            title="Ieraksti dzimšanas datumu GADS-MĒNESIS-DIENA"
+            placeholder={t("Meklēt pēc dzimšanas datuma GGGG-MM-DD")}
+            title={t("Ieraksti dzimšanas datumu GADS-MĒNESIS-DIENA")}
           />
         )}
 
@@ -308,9 +287,9 @@ export default function Home() {
 
         <div>
           {isSearching && people.length > 0 ? (
-            <p>Atrastie rezultāti: {people.length}</p>
+            <p>{t("Atrastie rezultāti")}: {people.length}</p>
           ) : isSearching && people.length === 0 ? (
-            <p>Netika atrasts neviens rezultāts</p>
+            <p>{t("Netika atrasts neviens rezultāts")}</p>
           ) : null}
         </div>
 
@@ -340,21 +319,21 @@ export default function Home() {
       <Modal show={selectedPerson !== null} onHide={() => setSelectedPerson(null)} className="d-flex  align-items-center">
         <Modal.Header closeButton>
           <Modal.Title>
-            Informācija par <strong>{selectedPerson?.vards} {selectedPerson?.uzvards} {selectedPerson?.vards_uzvards} {selectedPerson?.uzvards_un_vards}</strong>
+            {t("Informācija par")} <strong>{selectedPerson?.vards} {selectedPerson?.uzvards} {selectedPerson?.vards_uzvards} {selectedPerson?.uzvards_un_vards}</strong>
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <ListGroup variant="flush">
             {Object.entries(selectedPerson || {}).map(([key, value]) => (
               <ListGroup.Item key={key}>
-                <strong>{formatLabel(key)}:</strong> {value || 'Nav minētas'}
+                <strong>{t(key)}:</strong> {value || t('Nav minēts')}
               </ListGroup.Item>
             ))}
           </ListGroup>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="dark" onClick={() => setSelectedPerson(null)}>
-            Aizvērt
+            {t("Aizvērt")}
           </Button>
         </Modal.Footer>
       </Modal>

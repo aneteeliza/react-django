@@ -1,3 +1,7 @@
-export default function About(){
-    return <h1>Par datu bāzi</h1>
+import { useTranslation } from 'react-i18next';
+
+export default function About() {
+  const { t } = useTranslation();
+
+  return <h1>{t('Par datu bāzi')}</h1>;
 }

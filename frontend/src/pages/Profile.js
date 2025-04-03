@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Form, Button, Container, Spinner, Alert, Modal, Card } from 'react-bootstrap';
 import './styles.css';
 import { NetworkProvider } from '../NetworkProvider';
+import { useTranslation } from 'react-i18next';
 
 function Profils() {
   const [profile, setProfile] = useState({ email: '' });
@@ -18,6 +19,8 @@ function Profils() {
   const [passwordError, setPasswordError] = useState('');
   const [passwordChangeError, setPasswordChangeError] = useState(null);
   const [confirmPassword, setConfirmPassword] = useState('');
+
+  const { t } = useTranslation();
 
 
   useEffect(() => {
@@ -38,7 +41,7 @@ function Profils() {
       setLoading(false)
     } catch (error) {
       setError(
-        error.response ? error.response.data : 'Kaut kas nogāja greizi!'
+        error.response ? error.response.data : t('Kaut kas nogāja greizi')
       );
       setLoading(false);
     }
@@ -46,7 +49,7 @@ function Profils() {
 
   const handleEditToggle = async () => {
     if (!profile.email.includes('@')) {
-      setErrorMessage('E-pastam jābūt saturētam "@".');
+      setErrorMessage(t('E-pastam jāsatur "@"'));
       return; // Prevent further execution if the email is invalid
     }
 
@@ -54,10 +57,10 @@ function Profils() {
       try {
         await NetworkProvider.updateUser(profile)
         setError(null);
-        setSuccessMessage('Profila informācija veiksmīgi rediģēta!');
+        setSuccessMessage(t('Profila informācija veiksmīgi rediģēta'));
       } catch (error) {
         setError(null);
-        setErrorMessage('Izvēlies citu e-pastu. Lietotājs ar šādu e-pastu jau ir reģistrēts.');
+        setErrorMessage(t('Izvēlies citu e-pastu. Lietotājs ar šādu e-pastu jau ir reģistrēts'));
       }
 
     }
@@ -80,20 +83,20 @@ function Profils() {
     const passwordValidationErrors = [];
 
     if (newPassword !== confirmPassword) {
-      passwordValidationErrors.push('Paroles nesakrīt.');
+      passwordValidationErrors.push(t('Paroles nesakrīt'));
     }
 
     if (!/[A-Z]/.test(newPassword)) {
-      passwordValidationErrors.push('Parolei jāsatur vismaz 1 lielais burts.');
+      passwordValidationErrors.push(t('Parolei jāsatur vismaz 1 lielais burts'));
     }
     // Check for at least 8 characters
     if (newPassword.length < 8) {
-      passwordValidationErrors.push('Parolei jābūt vismaz 8 simbolu garai.');
+      passwordValidationErrors.push(t('Parolei jābūt vismaz 8 simbolu garai'));
     }
 
     // Check for at least one number
     if (!/\d/.test(newPassword)) {
-      passwordValidationErrors.push('Parolei jāsatur vismaz 1 cipars.');
+      passwordValidationErrors.push(t('Parolei jāsatur vismaz 1 cipars'));
     }
     if (passwordValidationErrors.length > 0) {
       setPasswordError(passwordValidationErrors.join(' '));
@@ -104,7 +107,7 @@ function Profils() {
 
     try {
       await NetworkProvider.changePassword(currentPassword, newPassword)
-      setSuccessMessage('Parole veiksmīgi nomainīta!');
+      setSuccessMessage(t('Parole veiksmīgi nomainīta'));
       setCurrentPassword('');
       setNewPassword('');
       setShowPasswordModal(false);
@@ -114,12 +117,12 @@ function Profils() {
     } catch (error) {
       if (error.response) {
         if (error.response.data.current_password) {
-          setPasswordChangeError('Pašreizēja parole ir nepareiza.');
+          setPasswordChangeError(t('Pašreizēja parole ir nepareiza'));
         } else {
-          setPasswordChangeError(error.response.data.detail || 'Kļūda paroles maiņā.');
+          setPasswordChangeError(error.response.data.detail || t('Kļūda paroles maiņā'));
         }
       } else {
-        setPasswordChangeError('Radās kļūda, mainot paroli!');
+        setPasswordChangeError(t('Radās kļūda, mainot paroli'));
       }
     }
   };
@@ -132,7 +135,7 @@ function Profils() {
 
     try {
       await NetworkProvider.deleteUser()
-      setSuccessMessage('Profils ir izdzēsts');
+      setSuccessMessage(t('Profils ir izdzēsts'));
       setProfile({});
       document.cookie = 'csrftoken=; Max-Age=0'; // Clear CSRF token
       document.cookie = 'sessionid=; Max-Age=0'; // Clear session cookie
@@ -140,7 +143,7 @@ function Profils() {
       window.location.href = '/login'; // Redirect to login
     } catch (error) {
       setError(
-        error.response ? error.response.data : 'Kaut kas nogāja greizi!'
+        error.response ? error.response.data : t('Kaut kas nogāja greizi!')
       );
     } finally {
       setShowDeleteModal(false);
@@ -179,7 +182,7 @@ function Profils() {
 
               <Form>
                 <Form.Group className="mb-3 w-100">
-                  <Form.Label style={{ display: 'block', textAlign: 'left', fontWeight: 'bold' }}>E-pasta adrese</Form.Label>
+                  <Form.Label style={{ display: 'block', textAlign: 'left', fontWeight: 'bold' }}>{t("E-pasta adrese")}</Form.Label>
                   <Form.Control
                     type="email"
                     name="email"
@@ -191,7 +194,7 @@ function Profils() {
                 </Form.Group>
 
                 <Form.Group className="mb-3 w-100">
-                  <Form.Label style={{ display: 'block', textAlign: 'left', fontWeight: 'bold' }}>Vārds</Form.Label>
+                  <Form.Label style={{ display: 'block', textAlign: 'left', fontWeight: 'bold' }}>{t("Vārds")}</Form.Label>
                   <Form.Control
                     type="text"
                     name="first_name"
@@ -203,11 +206,11 @@ function Profils() {
                 </Form.Group>
 
                 <Form.Group className="mb-3 w-100">
-                  <Form.Label style={{ display: 'block', textAlign: 'left', fontWeight: 'bold' }}>Uzvārds</Form.Label>
+                  <Form.Label style={{ display: 'block', textAlign: 'left', fontWeight: 'bold' }}>{t("Uzvārds")}</Form.Label>
                   <Form.Control
                     type="text"
                     name="last_name"
-                    placeholder="Uzvārds"
+                    placeholder={t("Uzvārds")}
                     value={profile.last_name}
                     readOnly={!editMode}
                     onChange={handleInputChange}
@@ -243,7 +246,7 @@ function Profils() {
                   className="me-2"
                   disabled={!isFormValid()} // Disable if any required field is empty
                 >
-                  {editMode ? 'Saglabāt izmaiņas' : 'Rediģēt'}
+                  {editMode ? t('Saglabāt izmaiņas') : t('Rediģēt')}
                 </Button>
 
                 <Button
@@ -272,30 +275,30 @@ function Profils() {
           )}
           <Form>
             <Form.Group className="mb-3 w-100">
-              <Form.Label>Pašreizējā parole</Form.Label>
+              <Form.Label>{t("Pašreizējā parole")}</Form.Label>
               <Form.Control
                 type="password"
-                placeholder="Ievadiet pašreizējo paroli"
+                placeholder={t("Ievadiet pašreizējo paroli")}
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
               />
             </Form.Group>
 
             <Form.Group className="mb-3 w-100">
-              <Form.Label>Jaunā parole</Form.Label>
+              <Form.Label>{t("Jaunā parole</Form.Label")}</Form.Label>
               <Form.Control
                 type="password"
-                placeholder="Ievadiet jauno paroli"
+                placeholder={t("Ievadiet jauno paroli")}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
               />
             </Form.Group>
 
             <Form.Group className="mb-3 w-100">
-              <Form.Label>Apstiprināt jauno paroli</Form.Label>
+              <Form.Label>{t("Apstiprināt jauno paroli")}</Form.Label>
               <Form.Control
                 type="password"
-                placeholder="Atkārtoti ievadiet jauno paroli"
+                placeholder={t("Atkārtoti ievadiet jauno paroli")}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
               />
@@ -306,10 +309,10 @@ function Profils() {
         </Modal.Body>
         <Modal.Footer>
           <Button variant="dark" onClick={() => setShowPasswordModal(false)}>
-            Aizvērt
+            {t("Aizvērt")}
           </Button>
           <Button variant="primary" onClick={handleChangePassword}>
-            Saglabāt jauno paroli
+            {t("Saglabāt jauno paroli")}
           </Button>
         </Modal.Footer>
       </Modal>
@@ -317,18 +320,18 @@ function Profils() {
       {/* Modal for Delete Confirmation */}
       <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>
         <Modal.Header closeButton>
-          <Modal.Title>Apstiprināt profila dzēšanu</Modal.Title>
+          <Modal.Title>{t("Apstiprināt profila dzēšanu")}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <p>Vai tiešām vēlaties dzēst savu profilu? Šī darbība ir neatgriezeniska.
+          <p>{t("Vai tiešām vēlaties dzēst savu profilu? Šī darbība ir neatgriezeniska")}
           </p>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
-            Atcelt
+            {t("Atcelt")}
           </Button>
           <Button variant="danger" onClick={handleDeleteProfile}>
-            Dzēst profilu
+            {t("Dzēst profilu")}
           </Button>
         </Modal.Footer>
       </Modal>
