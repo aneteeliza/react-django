@@ -12,7 +12,7 @@ const getCSRFToken = () => {
 
 // Axios instance
 const API = axios.create({
-    baseURL: 'http://localhost:8000',
+    baseURL: process.env.REACT_APP_API_URL,
     withCredentials: true,
     headers: {
         'Content-Type': 'application/json',
