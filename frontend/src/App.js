@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Container, Navbar, Button, Form, Card, Alert } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Route, Routes, Link, Navigate, useNavigate } from 'react-router-dom';
-import Home from './pages/Home';
+import Home from './pages/Home/Home';
 import './App.css';
 import Profils from './pages/Profile';
 import Info from './pages/Info';

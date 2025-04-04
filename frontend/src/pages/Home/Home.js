@@ -5,33 +5,45 @@ import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import ListGroup from 'react-bootstrap/ListGroup';
 import { BsArrowUp } from 'react-icons/bs';
-import './styles.css';
+import './../styles.css';
 import Card from 'react-bootstrap/Card';
-import { NetworkProvider } from '../NetworkProvider';
+import { NetworkProvider } from '../../NetworkProvider';
 import { useTranslation } from 'react-i18next';
+import { ClipLoader } from 'react-spinners';
+import PersonModal from './PersonModal';
+import ErrorModal from './ErrorModal';
 
 export default function Home() {
   const [nameSearch, setNameSearch] = useState('');
   const [birthdateSearch, setBirthdateSearch] = useState('');
   const [people, setPeople] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+
   const [selectedPerson, setSelectedPerson] = useState(null);
+  const [showPersonModal, setShowPersonModal] = useState(null);
 
   const [selectedTable, setSelectedTable] = useState(2);
   const [showTopButton, setShowTopButton] = useState(false);
   const [isStaff, setIsStaff] = useState(false);
-  const [profile, setProfile] = useState({ email: '', username: '' });
-  const [originalProfile, setOriginalProfile] = useState({ email: '', username: '' });
-  const [loading, setLoading] = useState(true);
+  const [showLoder, setShowLoader] = useState(false);
   const [error, setError] = useState(null);
 
+  const [currentPage, setCurrentPage] = useState(0);
+  const itemsPerPage = 20;
 
+  const totalPages = Math.ceil(people.length / itemsPerPage);
+
+  const paginatedPeople =
+    people.length <= itemsPerPage
+      ? people
+      : people.slice(
+        currentPage * itemsPerPage,
+        currentPage * itemsPerPage + itemsPerPage
+      );
 
   const [dienestaVienibaSearch, setDienestaVienibaSearch] = useState('');
-  const [vienibaSearch, setVienibaSearch] = useState('');
 
   const handleDienestaVienibaSearch = (event) => setDienestaVienibaSearch(event.target.value);
-  const handleVienibaSearch = (event) => setVienibaSearch(event.target.value);
 
   const { t } = useTranslation();
 
@@ -42,52 +54,60 @@ export default function Home() {
   const fetchUser = async () => {
     try {
       const response = await NetworkProvider.getUser()
-      const fetchedProfile = {
-        email: response.data.user.email,
-        username: response.data.user.username,
-      };
-      setProfile(fetchedProfile);
-      setOriginalProfile(fetchedProfile);  // Save the initial profile data
-
-      // Check if the user is a staff member and update the state
-      setIsStaff(response.data.user.is_staff);  // Assuming the backend provides is_staff field
-
-      setLoading(false); // Stop loading after data is fetched
+      console.log(response);
+      setIsStaff(response.user.is_staff);
     } catch (error) {
+      console.log(error);
       setError(
         error.response ? error.response.data : t('Kaut kas nogāja greizi')
       );
-      setLoading(false); // Stop loading on error
     }
   }
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 300) {
+        setShowTopButton(true);
+      } else {
+        setShowTopButton(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const isBirthdateSearchEnabled = selectedTable == 1 || selectedTable == 3;
 
   const fetchPeople = async () => {
     try {
+      setShowLoader(true);
+      setPeople([]);
       // Check if any search term is too short (less than 3 characters) 
       if (
         (nameSearch.trim().length > 0 && nameSearch.trim().length < 3) ||
-        (dienestaVienibaSearch.trim().length > 0 && dienestaVienibaSearch.trim().length < 3) ||
-        (vienibaSearch.trim().length > 0 && vienibaSearch.trim().length < 3)
+        (dienestaVienibaSearch.trim().length > 0 && dienestaVienibaSearch.trim().length < 3)
       ) {
-        setPeople([]);
-        setIsSearching(false); // no active search
+        setIsSearching(false);
+        setShowLoader(false);
         return;
       }
+
       // at least one search field has input
       if (
         !nameSearch.trim() &&
         !birthdateSearch.trim() &&
-        !dienestaVienibaSearch.trim() &&
-        !vienibaSearch.trim()
+        !dienestaVienibaSearch.trim()
       ) {
-        setPeople([]); // 
-        setIsSearching(false); // no active search
+        setIsSearching(false);
+        setShowLoader(false);
         return;
       }
 
-      const results = await NetworkProvider.search(selectedTable, nameSearch, "", birthdateSearch, dienestaVienibaSearch)
+      const [name, ...surnameParts] = nameSearch.trim().split(' ');
+      const surname = surnameParts.join(' ');
+
+      const results = await NetworkProvider.search(selectedTable, name, surname, birthdateSearch, dienestaVienibaSearch)
 
 
       // Latvian alphabet for custom sorting
@@ -137,30 +157,16 @@ export default function Home() {
       };
 
       const sortedPeople = results.sort(latvianSort);
-      console.log(sortedPeople);
 
       setPeople(sortedPeople);
       setIsSearching(true);
+      setShowLoader(false);
     } catch (error) {
-      console.error('Kļūda iegūstot datus:', error);
-      setPeople([]);
+      setError(error);
       setIsSearching(true);
+      setShowLoader(false);
     }
   };
-
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 300) {
-        setShowTopButton(true);
-      } else {
-        setShowTopButton(false);
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   // Scroll to top function
   const scrollToTop = () => {
@@ -222,7 +228,7 @@ export default function Home() {
         />
 
         {/* Conditional Inputs for Dienesta Vienība and Vienība */}
-        {isStaff && selectedTable === 0 && (
+        {isStaff && (
           <input
             type="text"
             id="dienestaVienibaSearch"
@@ -233,36 +239,6 @@ export default function Home() {
             style={{
               border: dienestaVienibaSearch.length > 0 && dienestaVienibaSearch.length < 3 ? '1px solid red' :
                 dienestaVienibaSearch.length >= 3 ? '1px solid green' : '1px solid #ccc',
-            }}
-          />
-        )}
-
-        {isStaff && selectedTable === 3 && (
-          <input
-            type="text"
-            id="dienestaVienibaSearch"
-            value={dienestaVienibaSearch}
-            onChange={handleDienestaVienibaSearch}
-            placeholder={t("Meklēt pēc dienesta vienības")}
-            title={t("Ieraksti vismaz 3 simbolus, lai meklētu pēc dienesta vienības")}
-            style={{
-              border: dienestaVienibaSearch.length > 0 && dienestaVienibaSearch.length < 3 ? '1px solid red' :
-                dienestaVienibaSearch.length >= 3 ? '1px solid green' : '1px solid #ccc',
-            }}
-          />
-        )}
-
-        {isStaff && selectedTable === 2 && (
-          <input
-            type="text"
-            id="vienibaSearch"
-            value={vienibaSearch}
-            onChange={handleVienibaSearch}
-            placeholder={t("Meklēt pēc dienesta vienības")}
-            title={t("Ieraksti vismaz 3 simbolus, lai meklētu pēc dienesta vienības")}
-            style={{
-              border: vienibaSearch.length > 0 && vienibaSearch.length < 3 ? '1px solid red' :
-                vienibaSearch.length >= 3 ? '1px solid green' : '1px solid #ccc',
             }}
           />
         )}
@@ -278,37 +254,65 @@ export default function Home() {
           />
         )}
 
-
-
         <Button onClick={fetchPeople} variant="dark" className="searching">
-          Meklēt
+          {t("Meklēt")}
         </Button>
         <br></br>
 
-        <div>
+        {showLoder &&
+          <div className="d-flex justify-content-center py-4">
+            <ClipLoader color="#000" loading={true} size={40} />
+          </div>
+        }
+
+        <ListGroup>
+          {paginatedPeople.map((person, index) => (
+            <ListGroup.Item
+              key={index}
+              action
+              onClick={() => {
+                setSelectedPerson(person);
+                setShowPersonModal(true)
+              }}
+            >
+              {person.name} {person.surname}
+            </ListGroup.Item>
+          ))}
+        </ListGroup>
+        {
+          people.length > 20 &&
+          <div className="d-flex justify-content-between align-items-center mt-3">
+            <Button
+              variant="secondary"
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 0))}
+              disabled={currentPage === 0}
+            >
+              ← {t('Iepriekšējā')}
+            </Button>
+
+            <span className="text-muted">
+              {t('Lapa')} {currentPage + 1} / {totalPages}
+            </span>
+
+            <Button
+              variant="secondary"
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages - 1))}
+              disabled={currentPage >= totalPages - 1}
+            >
+              {t('Nākamā')} →
+            </Button>
+          </div>
+        }
+
+        <>
           {isSearching && people.length > 0 ? (
             <p>{t("Atrastie rezultāti")}: {people.length}</p>
           ) : isSearching && people.length === 0 ? (
             <p>{t("Netika atrasts neviens rezultāts")}</p>
           ) : null}
-        </div>
+        </>
 
-        <div>
-          <ListGroup>
-            {people.map((person, index) => (
-              <ListGroup.Item
-                key={index}
-                action
-                onClick={() => {
-                  setSelectedPerson(person);
-                }}
-              >
-                {person.name} {person.surname}
-              </ListGroup.Item>
-            ))}
-          </ListGroup>
-        </div>
-      </Card>
+      </Card >
 
       {showTopButton && (
         <button className="back-to-top" onClick={scrollToTop}>
@@ -316,28 +320,20 @@ export default function Home() {
         </button>
       )}
 
-      <Modal show={selectedPerson !== null} onHide={() => setSelectedPerson(null)} className="d-flex  align-items-center">
-        <Modal.Header closeButton>
-          <Modal.Title>
-            {t("Informācija par")} <strong>{selectedPerson?.vards} {selectedPerson?.uzvards} {selectedPerson?.vards_uzvards} {selectedPerson?.uzvards_un_vards}</strong>
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <ListGroup variant="flush">
-            {Object.entries(selectedPerson || {}).map(([key, value]) => (
-              <ListGroup.Item key={key}>
-                <strong>{t(key)}:</strong> {value || t('Nav minēts')}
-              </ListGroup.Item>
-            ))}
-          </ListGroup>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="dark" onClick={() => setSelectedPerson(null)}>
-            {t("Aizvērt")}
-          </Button>
-        </Modal.Footer>
-      </Modal>
+      <ErrorModal
+        error={error}
+        onClose={() => {
+          setError(null);
+        }}
+      />
 
-    </div>
+      <PersonModal
+        show={showPersonModal}
+        setShow={setShowPersonModal}
+        selectedPerson={selectedPerson}
+        onClose={() => setShowPersonModal(false)}
+      />
+
+    </div >
   );
 }

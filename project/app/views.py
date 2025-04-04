@@ -1,19 +1,6 @@
 from .models import Brigade, Mobilised
-from rest_framework.decorators import api_view, permission_classes
-from django.contrib.auth import authenticate
-from django.contrib.auth import update_session_auth_hash
-from django.contrib.auth.forms import PasswordChangeForm
-from django.contrib.auth.models import User
 from rest_framework import status
-import requests
-from .utils import (
-    map_kritusie_data,
-    map_brigade_data,
-    map_mobilizetie_data,
-    map_zedelgema_data
-)
 from rest_framework.permissions import IsAuthenticated
-from django.shortcuts import render
 from rest_framework.views import APIView
 from . models import *
 from rest_framework.response import Response
@@ -21,9 +8,8 @@ from . serializer import *
 from django.db.models import Q
 
 from django.http import JsonResponse
-from django.contrib.auth.decorators import login_required
 
-from django.contrib.auth import get_user_model, login, logout
+from django.contrib.auth import login, logout
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -39,6 +25,7 @@ from django.utils.decorators import method_decorator
 
 class SearchView(APIView):
     permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         name = request.GET.get('name', '')
