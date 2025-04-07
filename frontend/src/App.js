@@ -9,6 +9,7 @@ import Info from './pages/Info';
 import { FaHome, FaSearch, FaUser, FaSignOutAlt, FaSignInAlt, FaUserPlus } from 'react-icons/fa';
 import { NetworkProvider } from './NetworkProvider';
 import { useTranslation } from 'react-i18next';
+import { ClipLoader } from 'react-spinners';
 
 function App() {
   const [currentUser, setCurrentUser] = useState(() => localStorage.getItem('currentUser') === 'true');
@@ -20,6 +21,7 @@ function App() {
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState('');
   const { t } = useTranslation();
+  const [showLoder, setShowLoader] = useState(false);
 
   useEffect(() => {
     if (localStorage.getItem('currentUser') === 'true') {
@@ -48,14 +50,16 @@ function App() {
     if (!validateFields()) return;
 
     try {
+      setShowLoader(true);
       const user = await NetworkProvider.loginUser({ email, password });
-      console.log(user);
       localStorage.setItem('currentUser', 'true');
       setCurrentUser(true);
       navigate('/');
     } catch (error) {
       console.error('Login error:', error);
       setErrorMessage(t('Pietikšanās neizdevās. Pārbaudiet e-pastu un paroli'));
+    } finally {
+      setShowLoader(false);
     }
   }
 
@@ -64,6 +68,7 @@ function App() {
     if (!validateFields()) return;
 
     try {
+      setShowLoader(true);
       await NetworkProvider.registerUser({
         email,
         password,
@@ -96,6 +101,8 @@ function App() {
         console.error(error);
         setErrorMessage(t('Reģistrācija neizdevās. Mēģiniet vēlreiz'));
       }
+    } finally {
+      setShowLoader(false)
     }
   }
 
@@ -104,6 +111,7 @@ function App() {
   async function submitLogout(e) {
     e.preventDefault();
     try {
+      setShowLoader(true)
       await NetworkProvider.logoutUser();
       localStorage.removeItem('currentUser');
       setCurrentUser(false);
@@ -115,6 +123,8 @@ function App() {
       navigate('/login');
     } catch (error) {
       console.error('Logout error:', error);
+    } finally {
+      setShowLoader(false)
     }
   }
 
@@ -137,7 +147,7 @@ function App() {
   const [error, setError] = useState("");
   const validateEmail = () => {
     if (!email.includes("@")) {
-      setError(t('Lūdzu, iekļaujiet „@” e-pasta adresē') +  " " + email + " " + t("nav derīga e-pasta adrese"));
+      setError(t('Lūdzu, iekļaujiet „@” e-pasta adresē') + " " + email + " " + t("nav derīga e-pasta adrese"));
     } else {
       setError(""); // Clear the error if email is valid
     }
@@ -256,6 +266,22 @@ function App() {
       <footer className="footer">
         <p>&copy; 2024 Latvijas Kara muzejs.</p>
       </footer>
+      {showLoder && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          backgroundColor: 'rgba(255, 255, 255, 0.8)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 9999
+        }}>
+          <ClipLoader color="#000" loading={true} size={40} />
+        </div>
+      )}
     </div>
   );
 }

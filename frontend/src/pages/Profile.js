@@ -3,6 +3,7 @@ import { Form, Button, Container, Spinner, Alert, Modal, Card } from 'react-boot
 import './styles.css';
 import { NetworkProvider } from '../NetworkProvider';
 import { useTranslation } from 'react-i18next';
+import { ClipLoader } from 'react-spinners';
 
 function Profils() {
   const [profile, setProfile] = useState({ email: '' });
@@ -19,6 +20,7 @@ function Profils() {
   const [passwordError, setPasswordError] = useState('');
   const [passwordChangeError, setPasswordChangeError] = useState(null);
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showLoder, setShowLoader] = useState(false);
 
   const { t } = useTranslation();
 
@@ -55,12 +57,15 @@ function Profils() {
 
     if (editMode) {
       try {
+        setShowLoader(true)
         await NetworkProvider.updateUser(profile)
         setError(null);
         setSuccessMessage(t('Profila informācija veiksmīgi rediģēta'));
       } catch (error) {
         setError(null);
         setErrorMessage(t('Izvēlies citu e-pastu. Lietotājs ar šādu e-pastu jau ir reģistrēts'));
+      } finally {
+        setShowLoader(false)
       }
 
     }
@@ -335,6 +340,23 @@ function Profils() {
           </Button>
         </Modal.Footer>
       </Modal>
+
+      {showLoder && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          backgroundColor: 'rgba(255, 255, 255, 0.8)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 9999
+        }}>
+          <ClipLoader color="#000" loading={true} size={40} />
+        </div>
+      )}
     </Container>
   );
 
