@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import Dropdown from 'react-bootstrap/Dropdown';
-import Modal from 'react-bootstrap/Modal';
-import Button from 'react-bootstrap/Button';
+import { Container, Button, Form, Card, Row, Col } from 'react-bootstrap';
 import ListGroup from 'react-bootstrap/ListGroup';
+import { FaSearch } from 'react-icons/fa';
 import { BsArrowUp } from 'react-icons/bs';
 import './../styles.css';
-import Card from 'react-bootstrap/Card';
 import { NetworkProvider } from '../../NetworkProvider';
 import { useTranslation } from 'react-i18next';
 import { ClipLoader } from 'react-spinners';
@@ -22,7 +19,7 @@ export default function Home() {
   const [selectedPerson, setSelectedPerson] = useState(null);
   const [showPersonModal, setShowPersonModal] = useState(null);
 
-  const [selectedTable, setSelectedTable] = useState(2);
+  const [selectedTable, setSelectedTable] = useState(0);
   const [showTopButton, setShowTopButton] = useState(false);
   const [isStaff, setIsStaff] = useState(false);
   const [showLoder, setShowLoader] = useState(false);
@@ -174,87 +171,103 @@ export default function Home() {
   };
 
 
-  const handleNameSearch = (event) => setNameSearch(event.target.value);
+  const handleNameSearch = (event) => {
+    const searchString = event.target.value.replace(/\d+/g, '');
+    setNameSearch(searchString);
+  }
   const handleBirthdateSearch = (event) => setBirthdateSearch(event.target.value);
 
-  const handleTableSelect = (eventKey, _) => {
-    setSelectedTable(parseInt(eventKey))
+  const handleTableSelect = (index) => {
+    setSelectedTable(index)
   };
 
+  const options = [
+    t("2.brigādes apbalvotie"),
+    t("Latviešu leģionā mobilizētie"),
+    t("Kritušie un bez vēsts pazudušie leģionāri"),
+    t("Zedelgemas karagūstekņu nometnē ieslodzītie")
+  ]
+
   return (
-    <div className="search">
-      <Card className="p-4 shadow-lg">
-        <h2>{t("Meklēšana")}</h2>
+    <Container className="flex-grow-1 d-flex justify-content-center align-items-center py-1">
+      <Card className="p-4 shadow-lg w-100" style={{ border: 'none', maxWidth: 650 }}>
+        <h3 className="text-start">{t("Karavīru meklēšana")}</h3>
+        <br />
 
-        <Dropdown onSelect={handleTableSelect}>
-          <Dropdown.Toggle id="dropdown-basic">
-            {
-              (() => {
-                switch (selectedTable) {
-                  case 0:
-                    return t("2.brigādes apbalvotie");
-                  case 1:
-                    return t("Latviešu leģionā mobilizētie");
-                  case 2:
-                    return t("Kritušie un bez vēsts pazudušie leģionāri");
-                  case 3:
-                    return t("Zedelgemas karagūstekņu nometnē ieslodzītie");
-                  default:
-                    return t("Izvēlies datubāzi");
-                }
-              })()
-            }
-          </Dropdown.Toggle>
+        <Row>
+          {options.map((option, index) => (
+            <Col xs={12} md={6} key={index} className="mb-2">
+              <div className="custom-radio-container d-flex align-items-center">
+                <Form.Check
+                  type="radio"
+                  id={`option-${index}`}
+                  name="databaseOption"
+                  value={index}
+                  checked={selectedTable === index}
+                  onChange={() => handleTableSelect(index)}
+                  className="radio-input"
+                  label=""
+                />
+                <span className="ms-2 text-start" style={{ fontSize: 14 }}>{option}</span>
+              </div>
+            </Col>
+          ))}
+        </Row>
+        <br />
 
-          <Dropdown.Menu id="dropdown-basic-menu">
-            <Dropdown.Item eventKey={1}>{t("Latviešu leģionā mobilizētie")}</Dropdown.Item>
-            <Dropdown.Item eventKey={3}>{t("Zedelgemas karagūstekņu nometnē ieslodzītie")}</Dropdown.Item>
-            <Dropdown.Item eventKey={2}>{t("Kritušie un bez vēsts pazudušie leģionāri")}</Dropdown.Item>
-            <Dropdown.Item eventKey={0}>{t("2.brigādes apbalvotie")}</Dropdown.Item>
-          </Dropdown.Menu>
-        </Dropdown>
-
-        <input
-          type="text"
-          id="nameSearch"
-          value={nameSearch}
-          onChange={handleNameSearch}
-          placeholder={t("Meklēt pēc vārda un/vai uzvārda")}
-          title={t("Ierakstiet vismaz 3 simbolus, lai meklētu pēc vārda un/vārda")}
-          style={{
-            border: nameSearch.length > 0 && nameSearch.length < 3 ? '1px solid red' :
-              nameSearch.length >= 3 ? '1px solid green' : '1px solid #ccc',
-          }}
-        />
-
-        {/* Conditional Inputs for Dienesta Vienība and Vienība */}
-        {isStaff && (
-          <input
-            type="text"
-            id="dienestaVienibaSearch"
-            value={dienestaVienibaSearch}
-            onChange={handleDienestaVienibaSearch}
-            placeholder={t("Meklēt pēc dienesta vienības")}
-            title={t("Ieraksti vismaz 3 simbolus, lai meklētu pēc dienesta vienības")}
+        <Form.Group className="mb-3 w-100">
+          <Form.Control
+            type="search"
+            placeholder={t("Meklēt pēc vārda un/vai uzvārda")}
+            value={nameSearch}
+            onChange={handleNameSearch}
+            className={`mb-3 w-100 ${error ? "is-invalid" : ""}`}
             style={{
-              border: dienestaVienibaSearch.length > 0 && dienestaVienibaSearch.length < 3 ? '1px solid red' :
-                dienestaVienibaSearch.length >= 3 ? '1px solid green' : '1px solid #ccc',
+              border: nameSearch.length > 0 && nameSearch.length < 3 ? '1px solid red' :
+                nameSearch.length >= 3 ? '1px solid green' : '1px solid #ccc',
             }}
           />
-        )}
+          {error && <div className="invalid-feedback">{error}</div>}
 
-        {isBirthdateSearchEnabled && (
-          <input
-            type="text"
-            id="birthdateSearch"
-            value={birthdateSearch}
-            onChange={handleBirthdateSearch}
-            placeholder={t("Meklēt pēc dzimšanas datuma GGGG-MM-DD")}
-            title={t("Ieraksti dzimšanas datumu GADS-MĒNESIS-DIENA")}
-          />
-        )}
+          {isStaff && (
+            <Form.Control
+              type="text"
+              id="dienestaVienibaSearch"
+              value={dienestaVienibaSearch}
+              onChange={handleDienestaVienibaSearch}
+              placeholder={t("Meklēt pēc dienesta vienības")}
+              title={t("Ieraksti vismaz 3 simbolus, lai meklētu pēc dienesta vienības")}
+              style={{
+                border: dienestaVienibaSearch.length > 0 && dienestaVienibaSearch.length < 3
+                  ? '1px solid red'
+                  : dienestaVienibaSearch.length >= 3
+                    ? '1px solid green'
+                    : '1px solid #ccc',
+              }}
+              className="mb-3 w-100"
+            />
+          )}
 
-        <Button onClick={fetchPeople} variant="dark" className="searching">
+          {isBirthdateSearchEnabled && (
+            <Form.Control
+              type="text"
+              id="birthdateSearch"
+              value={birthdateSearch}
+              onChange={handleBirthdateSearch}
+              placeholder={t("Meklēt pēc dzimšanas datuma GGGG-MM-DD")}
+              title={t("Ieraksti dzimšanas datumu GADS-MĒNESIS-DIENA")}
+              className="mb-3 w-100"
+            />
+          )}
+        </Form.Group>
+        <Button
+          onClick={fetchPeople}
+          variant="primary"
+          type="submit"
+          className="w-100 rounded-sm"
+          disabled={nameSearch.length < 3}
+        >
+          <FaSearch className="me-2" style={{ paddingBottom: 3 }} />
           {t("Meklēt")}
         </Button>
         <br></br>
@@ -334,6 +347,6 @@ export default function Home() {
         onClose={() => setShowPersonModal(false)}
       />
 
-    </div >
+    </Container >
   );
 }

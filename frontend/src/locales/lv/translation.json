@@ -9,7 +9,7 @@
     "Profils": "Profils",
     "Atteikties": "Atteikties",
     "Pieteikties": "Pieteikties",
-    "Reģistrēties": "Reģistrēties",
+    "Reģistrācija": "Reģistrācija",
     "Reģistrācija neizdevās. Mēģiniet vēlreiz": "Reģistrācija neizdevās. Mēģiniet vēlreiz",
     "Pietikšanās neizdevās. Pārbaudiet e-pastu un paroli": "Pietikšanās neizdevās. Pārbaudiet e-pastu un paroli",
     "E-pasta adrese": "E-pasta adrese",
@@ -125,5 +125,6 @@
     "wounded":"Ievainots",
     "death_sentence_arrest": "Nāvessods arests",
     "awarded": "Apbalvots",
-    "other_info": "Cita informācija"
+    "other_info": "Cita informācija",
+    "order_level": "Ordeņa līmenis"
 }
