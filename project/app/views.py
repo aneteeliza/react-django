@@ -21,7 +21,58 @@ from rest_framework.permissions import AllowAny
 
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils.decorators import method_decorator
+from rest_framework.authentication import SessionAuthentication
 
+class CsrfExemptSessionAuthentication(SessionAuthentication):
+    def enforce_csrf(self, request):
+        # Skip CSRF enforcement
+        return
+
+class UpdateView(APIView):
+     
+    authentication_classes = (CsrfExemptSessionAuthentication,)
+    
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+     
+    def put(self, request, *args, **kwargs):
+        """
+        Update the specific entry in the database based on table type.
+        """
+        table = int(request.data.get('table', 0))
+        record_id = request.data.get('id')
+        
+        # Fetch the object based on table and ID
+        match table:
+            case 2:  # Fallen table
+                try:
+                    record = Fallen.objects.get(id=record_id)
+                    serializer = FallenUpdateSerializer(record, data=request.data, partial=True)  # Use partial=True for partial updates
+                except Fallen.DoesNotExist:
+                    return Response({"error": "Record not found."}, status=status.HTTP_404_NOT_FOUND)
+            case 1:  # Mobilised table
+                try:
+                    record = Mobilised.objects.get(id=record_id)
+                    serializer = MobilisedSerializer(record, data=request.data, partial=True)
+                except Mobilised.DoesNotExist:
+                    return Response({"error": "Record not found."}, status=status.HTTP_404_NOT_FOUND)
+            case 3:  # Zedelgem table
+                try:
+                    record = Zedelgem.objects.get(id=record_id)
+                    serializer = ZedelgemSerializer(record, data=request.data, partial=True)
+                except Zedelgem.DoesNotExist:
+                    return Response({"error": "Record not found."}, status=status.HTTP_404_NOT_FOUND)
+            case _:  # Brigade table
+                try:
+                    record = Brigade.objects.get(id=record_id)
+                    serializer = BrigadeUpdateSerializer(record, data=request.data, partial=True)
+                except Brigade.DoesNotExist:
+                    return Response({"error": "Record not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class SearchView(APIView):
     permission_classes = [AllowAny]

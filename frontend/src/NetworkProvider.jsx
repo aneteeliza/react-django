@@ -43,6 +43,17 @@ export class NetworkProvider {
         return response.data;
     }
 
+    static async update(table, data) {
+        const params = {
+            table,
+            ...data
+        }
+
+        console.log(params);
+        const response = await API.put('/update', params);
+        return response.data;
+    }
+
     static async registerUser(userData) {
         const response = await API.post('/register', userData);
         return response.data;

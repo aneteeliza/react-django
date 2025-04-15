@@ -69,6 +69,7 @@ class BrigadeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Brigade
         fields = [
+            'id',
             'rank',
             'name',
             'surname',
@@ -80,6 +81,7 @@ class BrigadeSerializer(serializers.ModelSerializer):
         ]
 
     def get_name(self, obj):
+        print(obj)
         parts = (obj.name_surname or '').strip().split()
         return parts[1] if len(parts) > 1 else ''
 
@@ -93,6 +95,38 @@ class BrigadeSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         return {key: value for key, value in representation.items() if value is not None}
+    
+class BrigadeUpdateSerializer(serializers.ModelSerializer):
+
+    name = serializers.CharField(write_only=True, required=False)
+    surname = serializers.CharField(write_only=True, required=False)
+
+    class Meta:
+        model = Brigade
+        fields = [
+            'id',
+            'rank',
+            'name',
+            'surname',
+            'unit',
+            'order',
+            'order_level',
+            'notes',
+            'archive',
+        ]
+
+    def update(self, instance, validated_data):
+        name = validated_data.pop('name', None)
+        surname = validated_data.pop('surname', None)
+
+        if name or surname:
+            instance.name_surname = f"{name} {surname}" if name and surname else (name or surname)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        instance.save()
+        return instance
 
 
 
@@ -100,6 +134,7 @@ class MobilisedSerializer(serializers.ModelSerializer):
     class Meta:
         model = Mobilised
         fields = [
+            'id',
             'surname',
             'name',
             'birthdate',
@@ -136,6 +171,7 @@ class ZedelgemSerializer(serializers.ModelSerializer):
     class Meta:
         model = Zedelgem
         fields = [
+            'id',
             'rank',
             'surname',
             'name',
@@ -160,6 +196,39 @@ class ZedelgemSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         return {k: v for k, v in representation.items() if v is not None}
+    
+class ZedelgelmUpdateSerializer(serializers.ModelSerializer):
+
+    name = serializers.CharField(write_only=True, required=False)
+    surname = serializers.CharField(write_only=True, required=False)
+
+    class Meta:
+        model = Zedelgem
+        fields = [
+            'id',
+            'rank',
+            'surname',
+            'name',
+            'birthdate',
+            'unit',
+            'camp_section',
+            'left_to_psrs',
+            'dieddate',
+            'notes'
+        ]
+
+    def update(self, instance, validated_data):
+        name = validated_data.pop('name', None)
+        surname = validated_data.pop('surname', None)
+
+        if name or surname:
+            instance.name_surname = f"{name} {surname}" if name and surname else (name or surname)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        instance.save()
+        return instance
 
 
 class FallenSerialiser(serializers.ModelSerializer):
@@ -169,6 +238,7 @@ class FallenSerialiser(serializers.ModelSerializer):
     class Meta:
         model = Fallen
         fields = [
+            'id',
             'surname',
             'name',
             'rank',
@@ -191,6 +261,37 @@ class FallenSerialiser(serializers.ModelSerializer):
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         return {k: v for k, v in representation.items() if v is not None}
+    
+class FallenUpdateSerializer(serializers.ModelSerializer):
+
+    name = serializers.CharField(write_only=True, required=False)
+    surname = serializers.CharField(write_only=True, required=False)
+
+    class Meta:
+        model = Fallen
+        fields = [
+            'id',
+            'surname',
+            'name',
+            'rank',
+            'unit',
+            'fallen_died_when',
+            'burrial_place',
+            'notes'
+        ]
+
+    def update(self, instance, validated_data):
+        name = validated_data.pop('name', None)
+        surname = validated_data.pop('surname', None)
+
+        if name or surname:
+            instance.name_surname = f"{name} {surname}" if name and surname else (name or surname)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        instance.save()
+        return instance
 
 
 class ChangePasswordSerializer(serializers.Serializer):

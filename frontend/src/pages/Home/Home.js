@@ -5,10 +5,11 @@ import { FaSearch } from 'react-icons/fa';
 import { BsArrowUp } from 'react-icons/bs';
 import './../styles.css';
 import { NetworkProvider } from '../../NetworkProvider';
-import { useTranslation } from 'react-i18next';
+import { TransWithoutContext, useTranslation } from 'react-i18next';
 import { ClipLoader } from 'react-spinners';
 import PersonModal from './PersonModal';
 import ErrorModal from './ErrorModal';
+import EditPersonModal from './EditPersonModal';
 
 export default function Home() {
   const [nameSearch, setNameSearch] = useState('');
@@ -181,6 +182,17 @@ export default function Home() {
     setSelectedTable(index)
   };
 
+  const onEdited = async (record) => {
+    try {
+      setShowLoader(true);
+      await NetworkProvider.update(selectedTable, record)
+      setShowLoader(false);
+    } catch (error) {
+      setError(error.message);
+      setShowLoader(false);
+    }
+  }
+
   const options = [
     t("2.brigādes apbalvotie"),
     t("Latviešu leģionā mobilizētie"),
@@ -265,7 +277,7 @@ export default function Home() {
           variant="primary"
           type="submit"
           className="w-100 rounded-sm"
-          disabled={nameSearch.length < 3}
+          disabled={!(nameSearch.length >= 3 || birthdateSearch.length ==10)}
         >
           <FaSearch className="me-2" style={{ paddingBottom: 3 }} />
           {t("Meklēt")}
@@ -340,12 +352,21 @@ export default function Home() {
         }}
       />
 
-      <PersonModal
-        show={showPersonModal}
-        setShow={setShowPersonModal}
-        selectedPerson={selectedPerson}
-        onClose={() => setShowPersonModal(false)}
-      />
+      {true ?
+        <EditPersonModal
+          show={showPersonModal}
+          setShow={setShowPersonModal}
+          selectedPerson={selectedPerson}
+          onClose={() => setShowPersonModal(false)}
+          onEdited={onEdited}
+        /> : <PersonModal
+          show={showPersonModal}
+          setShow={setShowPersonModal}
+          selectedPerson={selectedPerson}
+          onClose={() => setShowPersonModal(false)}
+        />
+      }
+
 
     </Container >
   );

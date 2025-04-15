@@ -162,7 +162,7 @@ function Profils() {
   return (
     <Container className="p-4">
       <div className="d-flex justify-content-center align-items-center">
-        <Card className="w-50 text-center p-4 shadow-lg rounded">
+        <Card className="w-50 text-center p-4 shadow-lg rounded" style={{ border: 'none' }}>
           <h1>Profils</h1>
 
           {loading ? (
@@ -195,6 +195,7 @@ function Profils() {
                     value={profile.email}
                     readOnly={!editMode}
                     onChange={handleInputChange}
+                    className="rounded-sm"
                   />
                 </Form.Group>
 
@@ -207,6 +208,7 @@ function Profils() {
                     value={profile.first_name}
                     readOnly={!editMode}
                     onChange={handleInputChange}
+                    className="rounded-sm"
                   />
                 </Form.Group>
 
@@ -219,6 +221,7 @@ function Profils() {
                     value={profile.last_name}
                     readOnly={!editMode}
                     onChange={handleInputChange}
+                    className="rounded-sm"
                   />
                 </Form.Group>
 
@@ -286,6 +289,7 @@ function Profils() {
                 placeholder={t("Ievadiet pašreizējo paroli")}
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
+                className="rounded-sm"
               />
             </Form.Group>
 
@@ -296,6 +300,7 @@ function Profils() {
                 placeholder={t("Ievadiet jauno paroli")}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
+                className="rounded-sm"
               />
             </Form.Group>
 
@@ -306,6 +311,7 @@ function Profils() {
                 placeholder={t("Atkārtoti ievadiet jauno paroli")}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
+                className="rounded-sm"
               />
             </Form.Group>
 
