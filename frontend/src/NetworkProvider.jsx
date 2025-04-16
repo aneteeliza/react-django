@@ -31,7 +31,7 @@ API.interceptors.request.use(config => {
 export class NetworkProvider {
 
     static async search(table, name, surname, birthdate, unit) {
-        const response = await API.get('/search', {
+        const response = await API.get('/api/search', {
             params: {
                 table,
                 name,
@@ -49,43 +49,51 @@ export class NetworkProvider {
             ...data
         }
 
-        console.log(params);
-        const response = await API.put('/update', params);
+        const response = await API.put('/api/update', params);
         return response.data;
     }
 
+
     static async registerUser(userData) {
-        const response = await API.post('/register', userData);
+        const response = await API.post('/api/register', userData);
         return response.data;
     }
 
     static async loginUser(credentials) {
-        const response = await API.post('/login', credentials);
+        const response = await API.post('/api/login', credentials);
         return response.data;
     }
 
+    static async activateUser(uid, token) {
+        const response = await API.get('/api/user/activate', {
+            params: { uid, token }
+        });
+        return response.data;
+    }
+
+
     static async getUser() {
-        const response = await API.get('/user');
+        const response = await API.get('/api/user');
         return response.data;
     }
 
     static async updateUser(data) {
-        const response = await API.put('/user', data);
+        const response = await API.put('/api/user', data);
         return response.data;
     }
 
     static async deleteUser() {
-        const response = await API.delete('/user');
+        const response = await API.delete('/api/user');
         return response.data;
     }
 
     static async logoutUser() {
-        const response = await API.post('/logout');
+        const response = await API.post('/api/logout');
         return response.data;
     }
 
     static async changePassword(currentPassword, newPassword) {
-        const response = await API.put('/user/change-password', {
+        const response = await API.put('/api/user/change-password', {
             current_password: currentPassword,
             new_password: newPassword,
         });

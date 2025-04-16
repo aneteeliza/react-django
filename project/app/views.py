@@ -16,12 +16,19 @@ from rest_framework.response import Response
 from . serializer import UserRegisterSerializer, UserLoginSerializer, UserSerializer
 from rest_framework import permissions, status
 from . validations import custom_validation, validate_email, validate_password
-# Create your views here.
 from rest_framework.permissions import AllowAny
 
 from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from rest_framework.authentication import SessionAuthentication
+
+from django.core.mail import send_mail
+from django.conf import settings
+
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes
 
 class CsrfExemptSessionAuthentication(SessionAuthentication):
     def enforce_csrf(self, request):
@@ -172,8 +179,59 @@ class UserRegister(APIView):
         if serializer.is_valid(raise_exception=True):
             user = serializer.create(clean_data)
             if user:
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
+                # Send confirmation email
+                subject = 'Karavīru meklētāja konta aktivizēšana'
+
+                uid = urlsafe_base64_encode(force_bytes(user.pk))
+                token = default_token_generator.make_token(user)
+
+                activation_link = f"{settings.SITE_URL}/activate/{uid}/{token}/"
+                print(activation_link)
+
+                message = f"Nospied uz linka lai pabeigtu reģistrāciju \n {activation_link}"
+                from_email = settings.DEFAULT_FROM_EMAIL
+                recipient_list = [email]
+
+                num_sent = send_mail(subject, message, from_email, recipient_list)
+                if num_sent > 0:
+                    return Response(serializer.data, status=status.HTTP_201_CREATED)
+                else:
+                    return Response({"detail": "Neizdevās nosūtīt konta aktivācijas epastu'"}, status=status.HTTP_400_BAD_REQUEST)
         return Response({"detail": "Invalid data."}, status=status.HTTP_400_BAD_REQUEST)
+    
+class UserActivateView(APIView):
+
+    authentication_classes = (CsrfExemptSessionAuthentication,)
+    permission_classes = (permissions.AllowAny,)
+    
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+    
+    def get(self, request):
+        uid = request.query_params.get("uid")
+        token = request.query_params.get("token")
+
+        if not uid or not token:
+            return Response({"success": False, "message": "Invalid activation link."},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            uid = urlsafe_base64_decode(uid).decode()
+            user = AppUser.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, AppUser.DoesNotExist):
+            return Response({"success": False, "message": "User not found."},
+                            status=status.HTTP_404_NOT_FOUND)
+        
+       
+
+        if default_token_generator.check_token(user, token):
+            user.is_active = True
+            user.save()
+            return Response({"success": True, "email":user.email, "message": "Account activated successfully."},
+                            status=status.HTTP_200_OK)
+        else:
+            return Response({"success": False, "message": "Invalid or expired token."},
+                            status=status.HTTP_400_BAD_REQUEST)
 
 
 @method_decorator(ensure_csrf_cookie, name='dispatch')

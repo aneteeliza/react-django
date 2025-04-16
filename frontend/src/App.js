@@ -10,6 +10,8 @@ import { FaHome, FaSearch, FaUser, FaSignOutAlt, FaSignInAlt, FaUserPlus } from 
 import { NetworkProvider } from './NetworkProvider';
 import { useTranslation } from 'react-i18next';
 import { ClipLoader } from 'react-spinners';
+import ActivateAccount from './pages/ActivateAccount/ActivateAccount';
+import AuthForm from './pages/AuthForm';
 
 function App() {
   const [currentUser, setCurrentUser] = useState(() => localStorage.getItem('currentUser') === 'true');
@@ -19,6 +21,7 @@ function App() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const navigate = useNavigate();
+  const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const { t } = useTranslation();
   const [showLoder, setShowLoader] = useState(false);
@@ -77,11 +80,12 @@ function App() {
         last_name: lastName,
       });
 
-      const user = await NetworkProvider.loginUser({ email, password });
-
-      localStorage.setItem('currentUser', 'true');
-      setCurrentUser(true);
-      navigate('/');
+      setSuccessMessage("Reģistrācija veiksmīga, nospiediet uz reģistrācijas linka epastā")
+      setEmail('')
+      setPassword('')
+      setFirstName('')
+      setLastName('')
+      setConfirmPassword('')
     } catch (error) {
       if (error.response && error.response.data) {
         const errorData = error.response.data;
@@ -195,122 +199,32 @@ function App() {
       <Container className="flex-grow-1 d-flex justify-content-center align-items-center py-1">
         <Routes>
           <Route path="/login" element={
-            <Card className="w-100 p-4 shadow-lg rounded" style={{ border: 'none', maxWidth: 550 }}>
-              <h4 className="text-center mb-4">{registrationToggle ? t('Reģistrācija') : t('Pieteikties')}</h4>
-              <Form onSubmit={registrationToggle ? submitRegistration : submitLogin}>
-                {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
-                <Form.Group className="mb-3 w-100">
-                  <Form.Label className="d-block text-start w-100">{t("E-pasta adrese")}</Form.Label>
-                  <Form.Control
-                    type="email"
-                    placeholder={t("Ievadiet e-pasta adresi")}
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    onBlur={validateEmail}
-                    className={`rounded-sm ${error ? "is-invalid" : ""}`}
-                  />
-                  {error && <div className="invalid-feedback">{error}</div>}
-                </Form.Group>
-                {registrationToggle && (
-                  <Form.Group className="mb-3 mb-md-0 w-100">
-                    <Row className="g-3 row-cols-1 row-cols-md-2">
-                      {/* First Name */}
-                      <Col className="w-50">
-                        <Form.Label className="d-block text-start">{t("Vārds")}</Form.Label>
-                        <Form.Control
-                          type="text"
-                          placeholder={t("Ievadiet vārdu")}
-                          value={firstName}
-                          onChange={e => setFirstName(e.target.value)}
-                          className="rounded-sm"
-                        />
-                      </Col>
-
-                      {/* Last Name */}
-                      <Col className="w-50">
-                        <Form.Label className="d-block text-start">{t("Uzvārds")}</Form.Label>
-                        <Form.Control
-                          type="text"
-                          placeholder={t("Ievadiet uzvārdu")}
-                          value={lastName}
-                          onChange={e => setLastName(e.target.value)}
-                          className="rounded-sm"
-                        />
-                      </Col>
-                    </Row>
-                  </Form.Group>
-                )}
-                <Form.Group className="mb-3 w-100">
-                  <Form.Label className="d-block text-start w-100">{t("Parole")}</Form.Label>
-                  <Form.Control type="password" placeholder={t("Ievadiet paroli")} value={password} onChange={e => setPassword(e.target.value)} className="rounded-sm" />
-                </Form.Group>
-                {registrationToggle && (
-                  <>
-                    <Form.Group className="mb-3 w-100">
-                      <Form.Label className="d-block text-start w-100">{t("Apstipriniet paroli")}</Form.Label>
-                      <Form.Control
-                        type="password"
-                        placeholder={t("Atkārtoti ievadiet paroli")}
-                        value={confirmPassword}
-                        onChange={e => setConfirmPassword(e.target.value)}
-                        className="rounded-sm"
-                      />
-                    </Form.Group>
-
-                  </>
-                )}
-                <Button variant="primary" type="submit" className="w-100 rounded-sm">
-                  {registrationToggle ? t('Reģistrēties') : t('Pieteikties')}
-                </Button>
-              </Form>
-              <div className="mt-3 text-center">
-                <span style={{ fontSize: '14px', display: 'inline-flex', alignItems: 'center' }}> {/* Apply flexbox for vertical alignment */}
-                  {registrationToggle ? (
-                    <>
-                      {t('Jau ir lietotāja konts? ')}
-                      <Button
-                        variant="link"
-                        onClick={update_form_btn}
-                        className="text-primary p-0"
-                        style={{
-                          fontSize: '14px',
-                          display: 'inline-flex',
-                          marginLeft: 3,
-                          alignItems: 'center'
-                        }}
-                      >
-                        {t('Pieteikties')}
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      {t("Nav lietotāja konts? ")}
-                      <Button
-                        variant="link"
-                        onClick={update_form_btn}
-                        className="text-primary p-0"
-                        style={{
-                          fontSize: '14px',
-                          display: 'inline-flex',
-                          marginLeft: 3,
-                          alignItems: 'center'
-                        }}
-                      >
-                        {t("Reģistrēties")}
-                      </Button>
-                    </>
-                  )}
-                </span>
-              </div>
-
-
-
-            </Card>
+            <AuthForm
+              registrationToggle={registrationToggle}
+              submitRegistration={submitRegistration}
+              submitLogin={submitLogin}
+              successMessage={successMessage}
+              errorMessage={errorMessage}
+              email={email}
+              setEmail={setEmail}
+              validateEmail={validateEmail}
+              error={error}
+              firstName={firstName}
+              setFirstName={setFirstName}
+              lastName={lastName}
+              setLastName={setLastName}
+              password={password}
+              setPassword={setPassword}
+              confirmPassword={confirmPassword}
+              setConfirmPassword={setConfirmPassword}
+              update_form_btn={update_form_btn}
+            />
           } />
           <Route path="/" element={currentUser ? <Home /> : <Navigate to="/login" />} />
           <Route path="/meklesana" element={currentUser ? <Home /> : <Navigate to="/login" />} />
           <Route path="/profils" element={currentUser ? <Profils /> : <Navigate to="/login" />} />
           <Route path="/info" element={<Info />} />
+          <Route path="/activate/:uid/:token" element={<ActivateAccount />} />
         </Routes>
       </Container>
       <footer className="footer">

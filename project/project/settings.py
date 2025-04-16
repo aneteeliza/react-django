@@ -25,24 +25,33 @@ SECRET_KEY = 'django-insecure-tfzysh(&9rqamm5mgs*&s9pgot4bry_p&t9-^7#9-!&d5r6-!!
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+# Base url of the server
+SITE_URL = 'http://localhost:3000' if DEBUG else 'http://52.31.47.11'
+
 ALLOWED_HOSTS = ['*']
 
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',
     'http://127.0.0.1:3000',
-    'http://52.31.47.11',
+    SITE_URL,
     'http://0.0.0.0:3000',
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    'http://localhost:3000',
     'http://127.0.0.1:3000',
-    'http://52.31.47.11',
+    SITE_URL,
     'http://0.0.0.0:3000',
 ]
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com' 
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'appscribe.io@gmail.com' 
+EMAIL_HOST_PASSWORD = 'qcyd wfsx gbki hjui' # Temp app password for appscribe email
+DEFAULT_FROM_EMAIL = 'appscribe.io@gmail.com'
 
 # CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000']
 

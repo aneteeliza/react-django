@@ -5,13 +5,14 @@ import { FaSearch } from 'react-icons/fa';
 import { BsArrowUp } from 'react-icons/bs';
 import './../styles.css';
 import { NetworkProvider } from '../../NetworkProvider';
-import { TransWithoutContext, useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import { ClipLoader } from 'react-spinners';
 import PersonModal from './PersonModal';
 import ErrorModal from './ErrorModal';
 import EditPersonModal from './EditPersonModal';
 
 export default function Home() {
+  
   const [nameSearch, setNameSearch] = useState('');
   const [birthdateSearch, setBirthdateSearch] = useState('');
   const [people, setPeople] = useState([]);
@@ -52,7 +53,6 @@ export default function Home() {
   const fetchUser = async () => {
     try {
       const response = await NetworkProvider.getUser()
-      console.log(response);
       setIsStaff(response.user.is_staff);
     } catch (error) {
       console.log(error);

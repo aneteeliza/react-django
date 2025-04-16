@@ -10,7 +10,7 @@ class AppUserManager(BaseUserManager):
         if not password:
             raise ValueError('A password is required.')
         email = self.normalize_email(email)
-        user = self.model(email=email, is_active=True, is_staff=False)
+        user = self.model(email=email, is_active=False, is_staff=False)
         user.set_password(password)
         user.save()
         return user

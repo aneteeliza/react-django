@@ -19,16 +19,17 @@ from django.urls import path, include
 from app.views import *
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('search', SearchView.as_view(), name="anything"),
-    path('update', UpdateView.as_view(), name="update"),
-    path('register', UserRegister.as_view(), name='register'),
-    path('login', UserLogin.as_view(), name='login'),
-    path('logout', UserLogout.as_view(), name='logout'),
-    path('user', UserView.as_view(), name='user'),
-    path('user/', UserProfileView.as_view(), name='user-profile'),
-    path('user', UserProfileView.as_view(), name='user-profile'),
-    path('user/change-password', ChangePasswordView.as_view(),
+    path('api/admin/', admin.site.urls),
+    path('api/search', SearchView.as_view(), name="anything"),
+    path('api/update', UpdateView.as_view(), name="update"),
+    path('api/register', UserRegister.as_view(), name='register'),
+    path('api/login', UserLogin.as_view(), name='login'),
+    path('api/logout', UserLogout.as_view(), name='logout'),
+    path('api/user', UserView.as_view(), name='user'),
+    path('api/user/activate', UserActivateView.as_view(), name='activate'),
+    path('api/user/', UserProfileView.as_view(), name='user-profile'),
+    path('api/user', UserProfileView.as_view(), name='user-profile'),
+    path('api/user/change-password', ChangePasswordView.as_view(),
          name='change-password'),
-    path('delete/', UserDelete.as_view(), name='user-delete'),
+    path('api/delete/', UserDelete.as_view(), name='user-delete'),
 ]

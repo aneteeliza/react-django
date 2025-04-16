@@ -19,13 +19,9 @@ class UserRegisterSerializer(serializers.ModelSerializer):
                   'confirm_password', 'first_name', 'last_name']
 
     def validate(self, data):
-        # Logging the data to check what is being passed
-        print("Received data:", data)
-
-        # Check if passwords match
         if data['password'] != data['confirm_password']:
             raise serializers.ValidationError(
-                {"password": "Paroles nesakrīt!"}  # "Passwords do not match!"
+                {"password": "Paroles nesakrīt!"}
             )
 
         return data
