@@ -32,13 +32,10 @@ from django.utils.encoding import force_bytes
 
 class CsrfExemptSessionAuthentication(SessionAuthentication):
     def enforce_csrf(self, request):
-        # Skip CSRF enforcement
         return
 
 class UpdateView(APIView):
-     
-    authentication_classes = (CsrfExemptSessionAuthentication,)
-    
+         
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
      
