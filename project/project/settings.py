@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-tfzysh(&9rqamm5mgs*&s9pgot4bry_p&t9-^7#9-!&d5r6-!!'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 # Base url of the server
 SITE_URL = 'http://localhost:3000' if DEBUG else 'http://52.31.47.11'
