@@ -279,31 +279,6 @@ class UserView(APIView):
         return Response({"message": "Account deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
 
 
-class UserProfileView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        user = request.user
-        serializer = UserSerializer(user)
-        return Response({"user": serializer.data})
-
-    def put(self, request):
-        user = request.user
-        user.email = request.data.get("email", user.email)
-        user.first_name = request.data.get("first_name", user.first_name)
-        user.last_name = request.data.get("last_name", user.last_name)
-        user.save()
-
-        return Response({"message": "Profile updated successfully"}, status=status.HTTP_200_OK)
-
-
-def profile_view(request):
-    user = request.user
-    return JsonResponse({
-        "email": user.email,
-    })
-
-
 class ChangePasswordView(APIView):
     permission_classes = [IsAuthenticated]
 

@@ -27,8 +27,6 @@ urlpatterns = [
     path('api/logout', UserLogout.as_view(), name='logout'),
     path('api/user', UserView.as_view(), name='user'),
     path('api/user/activate', UserActivateView.as_view(), name='activate'),
-    path('api/user/', UserProfileView.as_view(), name='user-profile'),
-    path('api/user', UserProfileView.as_view(), name='user-profile'),
     path('api/user/change-password', ChangePasswordView.as_view(),
          name='change-password'),
     path('api/delete/', UserDelete.as_view(), name='user-delete'),

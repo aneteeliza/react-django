@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Button, Form, Card, Row, Col } from 'react-bootstrap';
-import ListGroup from 'react-bootstrap/ListGroup';
+import { Container, Button, Form, Card, Row, Col, ListGroup } from 'react-bootstrap'
 import { FaSearch } from 'react-icons/fa';
 import { BsArrowUp } from 'react-icons/bs';
 import './../styles.css';
@@ -12,8 +11,9 @@ import ErrorModal from './ErrorModal';
 import EditPersonModal from './EditPersonModal';
 
 export default function Home() {
-  
+
   const [nameSearch, setNameSearch] = useState('');
+  const [surnameSearch, setSurnameSearch] = useState('');
   const [birthdateSearch, setBirthdateSearch] = useState('');
   const [people, setPeople] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -84,6 +84,7 @@ export default function Home() {
       // Check if any search term is too short (less than 3 characters) 
       if (
         (nameSearch.trim().length > 0 && nameSearch.trim().length < 3) ||
+        (surnameSearch.trim().length > 0 && surnameSearch.trim().length < 3) ||
         (dienestaVienibaSearch.trim().length > 0 && dienestaVienibaSearch.trim().length < 3)
       ) {
         setIsSearching(false);
@@ -94,6 +95,7 @@ export default function Home() {
       // at least one search field has input
       if (
         !nameSearch.trim() &&
+        !surnameSearch.trim() &&
         !birthdateSearch.trim() &&
         !dienestaVienibaSearch.trim()
       ) {
@@ -102,10 +104,7 @@ export default function Home() {
         return;
       }
 
-      const [name, ...surnameParts] = nameSearch.trim().split(' ');
-      const surname = surnameParts.join(' ');
-
-      const results = await NetworkProvider.search(selectedTable, name, surname, birthdateSearch, dienestaVienibaSearch)
+      const results = await NetworkProvider.search(selectedTable, nameSearch, surnameSearch, birthdateSearch, dienestaVienibaSearch)
 
 
       // Latvian alphabet for custom sorting
@@ -176,6 +175,12 @@ export default function Home() {
     const searchString = event.target.value.replace(/\d+/g, '');
     setNameSearch(searchString);
   }
+
+  const handleSurnameSearch = (event) => {
+    const searchString = event.target.value.replace(/\d+/g, '');
+    setSurnameSearch(searchString);
+  }
+
   const handleBirthdateSearch = (event) => setBirthdateSearch(event.target.value);
 
   const handleTableSelect = (index) => {
@@ -202,7 +207,7 @@ export default function Home() {
 
   return (
     <Container className="flex-grow-1 d-flex justify-content-center align-items-center py-1">
-      <Card className="p-4 shadow-lg w-100" style={{ border: 'none', maxWidth: 650 }}>
+      <Card className="p-4 shadow-lg w-100" style={{ border: 'none', maxWidth: 750 }}>
         <h3 className="text-start">{t("Karavīru meklēšana")}</h3>
         <br />
 
@@ -230,9 +235,20 @@ export default function Home() {
         <Form.Group className="mb-3 w-100">
           <Form.Control
             type="search"
-            placeholder={t("Meklēt pēc vārda un/vai uzvārda")}
+            placeholder={t("Meklēt pēc vārda")}
             value={nameSearch}
             onChange={handleNameSearch}
+            className={`mb-3 w-100 ${error ? "is-invalid" : ""}`}
+            style={{
+              border: nameSearch.length > 0 && nameSearch.length < 3 ? '1px solid red' :
+                nameSearch.length >= 3 ? '1px solid green' : '1px solid #ccc',
+            }}
+          />
+          <Form.Control
+            type="search"
+            placeholder={t("Meklēt pēc uzvārda")}
+            value={surnameSearch}
+            onChange={handleSurnameSearch}
             className={`mb-3 w-100 ${error ? "is-invalid" : ""}`}
             style={{
               border: nameSearch.length > 0 && nameSearch.length < 3 ? '1px solid red' :
@@ -266,8 +282,8 @@ export default function Home() {
               id="birthdateSearch"
               value={birthdateSearch}
               onChange={handleBirthdateSearch}
-              placeholder={t("Meklēt pēc dzimšanas datuma GGGG-MM-DD")}
-              title={t("Ieraksti dzimšanas datumu GADS-MĒNESIS-DIENA")}
+              placeholder={t("Meklēt pēc dzimšanas gada")}
+              title={t("Ieraksti dzimšanas gadu")}
               className="mb-3 w-100"
             />
           )}
@@ -277,7 +293,7 @@ export default function Home() {
           variant="primary"
           type="submit"
           className="w-100 rounded-sm"
-          disabled={!(nameSearch.length >= 3 || birthdateSearch.length ==10)}
+          disabled={!(nameSearch.length >= 3 || surnameSearch.length >= 3 || dienestaVienibaSearch.length >= 3 || birthdateSearch.length == 4)}
         >
           <FaSearch className="me-2" style={{ paddingBottom: 3 }} />
           {t("Meklēt")}
@@ -291,19 +307,44 @@ export default function Home() {
         }
 
         <ListGroup>
+          {/* Header Row */}
+          <ListGroup.Item>
+            <Row>
+              <Col md={5} className="text-start text-secondary fw-semibold">{t("Vārds, Uzvārds")}</Col>
+              <Col md={3} className="text-secondary fw-semibold">{t("Dzimšanas gads")}</Col>
+              <Col md={4} className="text-secondary fw-semibold">{t("Miršanas gads")}</Col>
+            </Row>
+          </ListGroup.Item>
+
+          {/* Data Rows */}
           {paginatedPeople.map((person, index) => (
             <ListGroup.Item
               key={index}
               action
               onClick={() => {
                 setSelectedPerson(person);
-                setShowPersonModal(true)
+                setShowPersonModal(true);
               }}
             >
-              {person.name} {person.surname}
+              <Row className="align-items-center">
+                <Col md={5} className="fw-bold text-start">
+                  {person.name} {person.surname}
+                </Col>
+                <Col md={3}>
+                  {(person.birthdate && person.birthdate.replace(/\.$/, '')) || t('Nav datu')}
+                </Col>
+                <Col md={4}>
+                  {(
+                    person.death_date ||
+                    person.other_death_date ||
+                    person.dieddate
+                  )?.replace(/\.$/, '') || t('Nav datu')}
+                </Col>
+              </Row>
             </ListGroup.Item>
           ))}
         </ListGroup>
+
         {
           people.length > 20 &&
           <div className="d-flex justify-content-between align-items-center mt-3">

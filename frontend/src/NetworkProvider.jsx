@@ -22,26 +22,30 @@ const API = axios.create({
 // Interceptor to attach CSRF token to every request
 API.interceptors.request.use(config => {
     const csrfToken = getCSRFToken();
+    console.log(csrfToken);
     if (csrfToken) {
         config.headers['X-CSRFToken'] = csrfToken;
     }
     return config;
 });
 
+API.defaults.withCredentials = true;
+
 export class NetworkProvider {
 
     static async search(table, name, surname, birthdate, unit) {
-        const response = await API.get('/api/search', {
-            params: {
-                table,
-                name,
-                surname,
-                birthdate,
-                unit,
-            },
-        });
+        const params = {};
+
+        if (table) params.table = table;
+        if (name) params.name = name;
+        if (surname) params.surname = surname;
+        if (birthdate) params.birthdate = birthdate;
+        if (unit) params.unit = unit;
+
+        const response = await API.get('/api/search', { params });
         return response.data;
     }
+
 
     static async update(table, data) {
         const params = {
@@ -78,7 +82,7 @@ export class NetworkProvider {
     }
 
     static async updateUser(data) {
-        const response = await API.put('/api/user', data);
+        const response = await API.put('/api/user', data, { withCredentials: true});
         return response.data;
     }
 
