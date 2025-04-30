@@ -11,7 +11,8 @@ import { NetworkProvider } from './NetworkProvider';
 import { useTranslation } from 'react-i18next';
 import { ClipLoader } from 'react-spinners';
 import ActivateAccount from './pages/ActivateAccount/ActivateAccount';
-import AuthForm from './pages/AuthForm';
+import AuthForm from './pages/AuthForm/AuthForm';
+import AuthBackground from './pages/AuthForm/AuthBackground';
 
 function App() {
   const [currentUser, setCurrentUser] = useState(() => localStorage.getItem('currentUser') === 'true');
@@ -195,30 +196,32 @@ function App() {
           </Navbar.Collapse>
         </Container>
       </Navbar>
-
       <Container className="flex-grow-1 d-flex justify-content-center align-items-center py-1">
         <Routes>
           <Route path="/login" element={
-            <AuthForm
-              registrationToggle={registrationToggle}
-              submitRegistration={submitRegistration}
-              submitLogin={submitLogin}
-              successMessage={successMessage}
-              errorMessage={errorMessage}
-              email={email}
-              setEmail={setEmail}
-              validateEmail={validateEmail}
-              error={error}
-              firstName={firstName}
-              setFirstName={setFirstName}
-              lastName={lastName}
-              setLastName={setLastName}
-              password={password}
-              setPassword={setPassword}
-              confirmPassword={confirmPassword}
-              setConfirmPassword={setConfirmPassword}
-              update_form_btn={update_form_btn}
-            />
+            <>
+              <AuthBackground />
+              <AuthForm
+                registrationToggle={registrationToggle}
+                submitRegistration={submitRegistration}
+                submitLogin={submitLogin}
+                successMessage={successMessage}
+                errorMessage={errorMessage}
+                email={email}
+                setEmail={setEmail}
+                validateEmail={validateEmail}
+                error={error}
+                firstName={firstName}
+                setFirstName={setFirstName}
+                lastName={lastName}
+                setLastName={setLastName}
+                password={password}
+                setPassword={setPassword}
+                confirmPassword={confirmPassword}
+                setConfirmPassword={setConfirmPassword}
+                update_form_btn={update_form_btn}
+              />
+            </>
           } />
           <Route path="/" element={currentUser ? <Home /> : <Navigate to="/login" />} />
           <Route path="/meklesana" element={currentUser ? <Home /> : <Navigate to="/login" />} />
